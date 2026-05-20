@@ -416,4 +416,16 @@ class AppSettingsManager(private val context: Context) {
         }
     }
 
+    // 长期公告已读版本
+    val announcementReadVersion: StateFlow<String> = settings
+        .map { it.announcementReadVersion }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, initialSettings.announcementReadVersion)
+
+    suspend fun setAnnouncementReadVersion(version: String) {
+        with(AppSettingsSchema) {
+            context.dataStore.edit { it[announcementReadVersion] = version }
+        }
+    }
+
 }

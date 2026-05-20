@@ -17,6 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,10 +28,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.aliothmoon.maameow.R
+import com.aliothmoon.maameow.announcement.AnnouncementConfig
 import com.aliothmoon.maameow.constant.Routes
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.ExternalNotificationService
+import com.aliothmoon.maameow.presentation.components.AnnouncementDialog
 import com.aliothmoon.maameow.presentation.components.ResourceLoadingOverlay
 import com.aliothmoon.maameow.presentation.view.background.BackgroundTaskView
 import com.aliothmoon.maameow.presentation.view.home.HomeView
@@ -44,6 +47,7 @@ import com.aliothmoon.maameow.schedule.ui.CountdownDialog
 import com.aliothmoon.maameow.schedule.ui.ScheduleEditView
 import com.aliothmoon.maameow.schedule.ui.ScheduleListView
 import com.aliothmoon.maameow.schedule.ui.ScheduleTriggerLogView
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
@@ -59,9 +63,12 @@ fun AppNavigation(
     val context = LocalContext.current
 
     var isFullscreen by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     // 执行模式状态 - 用于底部导航拦截
     val runMode by appSettings.runMode.collectAsStateWithLifecycle()
+    val announcementReadVersion by appSettings.announcementReadVersion.collectAsStateWithLifecycle()
+    val language by appSettings.language.collectAsStateWithLifecycle()
     val pendingScheduledExecution by backgroundTaskViewModel.coordinator.pendingExecution.collectAsStateWithLifecycle()
     val scheduledCountdownState by backgroundTaskViewModel.coordinator.countdownState.collectAsStateWithLifecycle()
 
@@ -292,6 +299,26 @@ fun AppNavigation(
                 state = countdown,
                 onCancel = { backgroundTaskViewModel.onScheduledCountdownCancel() },
                 onStartNow = { backgroundTaskViewModel.onScheduledStartNow() },
+            )
+        }
+
+        // 长期公告弹窗：每次公告版本变更后首次启动自动弹出
+        val announcementMarkdown = remember(announcementReadVersion, language) {
+            if (announcementReadVersion != AnnouncementConfig.CURRENT_VERSION) {
+                AnnouncementConfig.loadContent(context, language)
+            } else {
+                null
+            }
+        }
+        if (announcementMarkdown != null) {
+            AnnouncementDialog(
+                imageAssetPath = remember(language) { AnnouncementConfig.imageAssetPath(language) },
+                markdown = announcementMarkdown,
+                onConfirmed = {
+                    coroutineScope.launch {
+                        appSettings.setAnnouncementReadVersion(AnnouncementConfig.CURRENT_VERSION)
+                    }
+                },
             )
         }
     }

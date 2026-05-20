@@ -1249,4 +1249,12 @@
     <!-- i18n: update -->
     <string name="update_toast_auto_download_app_failed">Failed to auto-download the app update</string>
     <string name="update_toast_auto_download_resource_failed">Failed to auto-download the resource update</string>
+
+    <!-- i18n: announcement -->
+    <string name="announcement_title">Important Notice</string>
+    <string name="announcement_read_button">I\'ve Read It</string>
+    <string name="announcement_confirm_title">Confirm</string>
+    <string name="announcement_confirm_message">This notice won\'t appear again after confirmation. Please make sure you have read it fully.</string>
+    <string name="announcement_confirm_ok">Got it, don\'t show again</string>
+    <string name="announcement_confirm_back">Back to read again</string>
 </resources>

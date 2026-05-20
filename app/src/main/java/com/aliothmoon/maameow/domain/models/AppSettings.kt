@@ -52,4 +52,6 @@ data class AppSettings(
      * 个别设备上 ESC 注入异常时可关闭, 改用普通滑动部署
      */
     @PrefKey(default = "true") val deploymentWithPause: String = "true",
+
+    @PrefKey(default = "") val announcementReadVersion: String = "",
 )

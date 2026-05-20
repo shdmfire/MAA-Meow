@@ -1304,4 +1304,12 @@
     <!-- i18n: update -->
     <string name="update_toast_auto_download_app_failed">自动下载 App 更新失败</string>
     <string name="update_toast_auto_download_resource_failed">自动下载资源更新失败</string>
+
+    <!-- i18n: announcement -->
+    <string name="announcement_title">重要公告</string>
+    <string name="announcement_read_button">我已阅读</string>
+    <string name="announcement_confirm_title">确认已阅读</string>
+    <string name="announcement_confirm_message">确认后本公告不再弹出，请确保已完整阅读全部内容。</string>
+    <string name="announcement_confirm_ok">确认，不再提示</string>
+    <string name="announcement_confirm_back">返回继续阅读</string>
 </resources>
