@@ -57,27 +57,53 @@ def get_project_root() -> Path:
 
 
 def fetch_json(url: str) -> dict:
-    req = urllib.request.Request(url)
-    req.add_header("Accept", "application/vnd.github.v3+json")
-    req.add_header("User-Agent", "MaaMeow-Setup")
-    # Support GITHUB_TOKEN env var (CI or rate limit)
+    def _do_request(with_auth: bool) -> dict:
+        req = urllib.request.Request(url)
+        req.add_header("Accept", "application/vnd.github.v3+json")
+        req.add_header("User-Agent", "MaaMeow-Setup")
+        if with_auth:
+            req.add_header("Authorization", f"token {token}")
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+
     token = os.environ.get("GITHUB_TOKEN")
-    if token:
-        req.add_header("Authorization", f"token {token}")
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    if not token:
+        return _do_request(with_auth=False)
+    try:
+        return _do_request(with_auth=True)
+    except urllib.error.HTTPError as e:
+        # GITHUB_TOKEN is scoped to the current repo and may be rejected (401)
+        # when accessing a different public repository. Retry without auth.
+        if e.code == 401:
+            print(f"[WARN] Auth failed ({e.code}), retrying without token...")
+            return _do_request(with_auth=False)
+        raise
 
 
 def download_file(url: str, dest: Path):
     print(f"  [DOWNLOAD] {dest.name}")
-    req = urllib.request.Request(url)
-    req.add_header("Accept", "application/octet-stream")
-    req.add_header("User-Agent", "MaaMeow-Setup")
     token = os.environ.get("GITHUB_TOKEN")
-    if token:
-        req.add_header("Authorization", f"token {token}")
+
+    def _make_req(with_auth: bool):
+        r = urllib.request.Request(url)
+        r.add_header("Accept", "application/octet-stream")
+        r.add_header("User-Agent", "MaaMeow-Setup")
+        if with_auth and token:
+            r.add_header("Authorization", f"token {token}")
+        return r
+
     dest.parent.mkdir(parents=True, exist_ok=True)
-    with urllib.request.urlopen(req, timeout=600) as resp:
+    try:
+        req = _make_req(with_auth=bool(token))
+        resp_ctx = urllib.request.urlopen(req, timeout=600)
+    except urllib.error.HTTPError as e:
+        if e.code == 401 and token:
+            print(f"[WARN] Auth failed ({e.code}), retrying without token...")
+            req = _make_req(with_auth=False)
+            resp_ctx = urllib.request.urlopen(req, timeout=600)
+        else:
+            raise
+    with resp_ctx as resp:
         total = int(resp.headers.get("Content-Length", 0))
         downloaded = 0
         with open(dest, "wb") as f:
