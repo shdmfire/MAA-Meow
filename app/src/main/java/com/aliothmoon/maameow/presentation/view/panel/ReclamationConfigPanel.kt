@@ -162,14 +162,8 @@ fun ReclamationConfigPanel(config: ReclamationConfig, onConfigChange: (Reclamati
                         when {
                             isRelaunchAnchor -> {
                                 item {
-                                    val containerColor = when (config.mode) {
-                                        ReclamationConfig.MODE_RA15 -> MaterialTheme.colorScheme.errorContainer
-                                        else -> MaterialTheme.colorScheme.tertiaryContainer
-                                    }
-                                    val onContainerColor = when (config.mode) {
-                                        ReclamationConfig.MODE_RA15 -> MaterialTheme.colorScheme.onErrorContainer
-                                        else -> MaterialTheme.colorScheme.onTertiaryContainer
-                                    }
+                                    val containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                                    val onContainerColor = MaterialTheme.colorScheme.onTertiaryContainer
                                     val tipRes = when (config.mode) {
                                         ReclamationConfig.MODE_RA15 -> R.string.panel_reclamation_relaunch_anchor_tip_ra15
                                         ReclamationConfig.MODE_RA4 -> R.string.panel_reclamation_relaunch_anchor_tip_ra4
