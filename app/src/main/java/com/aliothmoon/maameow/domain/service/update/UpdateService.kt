@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.aliothmoon.maameow.BuildConfig
+import com.aliothmoon.maameow.constant.MaaFiles
 import com.aliothmoon.maameow.data.api.CdkRequiredException
 import com.aliothmoon.maameow.data.api.HttpClientHelper
 import com.aliothmoon.maameow.data.api.MirrorChyanApiClient
@@ -128,7 +129,7 @@ class UpdateService(
             _appProcessState.value = UpdateProcessState.Success
             Result.success(Unit)
         } catch (e: Exception) {
-            Timber.e(e, "安装 APK 失败")
+            Timber.e(e, "Failed to install APK")
             _appProcessState.value =
                 UpdateProcessState.Failed(UpdateError.UnknownError("安装失败: ${e.message}"))
             Result.failure(e)
@@ -205,6 +206,8 @@ class UpdateService(
 
         _resourceProcessState.value = UpdateProcessState.Extracting(0, 0, 0)
 
+        // 清理旧文件，避免上次失败残留的文件与新版本混合
+        if (target.exists()) target.deleteRecursively()
         target.mkdirs()
 
         val extractResult = extractor.extract(
@@ -233,10 +236,12 @@ class UpdateService(
         return extractResult.fold(
             onSuccess = {
                 _resourceProcessState.value = UpdateProcessState.Success
-                Timber.i("资源更新完成")
+                Timber.i("Resource update completed")
                 Result.success(Unit)
             },
             onFailure = { e ->
+                // 解压中途失败时资源目录处于残缺状态，删除 version.json 让下次重新触发完整更新
+                File(target, MaaFiles.VERSION_FILE).delete()
                 _resourceProcessState.value =
                     UpdateProcessState.Failed(UpdateError.UnknownError("解压失败"))
                 Result.failure(e)

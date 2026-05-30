@@ -30,6 +30,7 @@ class ResourceDownloader(
         url: String,
         onProgress: (DownloadProgress) -> Unit
     ): Result<File> {
+        var tempFile: File? = null
         return try {
             val request = Request.Builder().url(url)
                 .header("Accept-Encoding", "identity")
@@ -37,12 +38,13 @@ class ResourceDownloader(
             val response = httpClient.rawClient().newCall(request).await()
 
             if (!response.isSuccessful) {
+                response.close()
                 return Result.failure(Exception("服务器返回错误 (HTTP ${response.code})"))
             }
 
             val body = response.body
             val total = body.contentLength().takeIf { it > 0 } ?: 0L
-            val tempFile = File(context.cacheDir, "MaaResources-${UUID.randomUUID()}.zip")
+            tempFile = File(context.cacheDir, "MaaResources-${UUID.randomUUID()}.zip")
 
             withContext(Dispatchers.IO) {
                 BufferedOutputStream(FileOutputStream(tempFile)).use { output ->
@@ -83,9 +85,10 @@ class ResourceDownloader(
                 }
             }
 
-            Result.success(tempFile)
+            Result.success(tempFile!!)
         } catch (e: Exception) {
             Timber.e(e, "下载文件失败")
+            tempFile?.delete()
             Result.failure(Exception(formatDownloadError(e), e))
         }
     }

@@ -416,8 +416,8 @@ class ActivityManager(
     suspend fun runIfDirty(action: suspend () -> Unit) {
         if (dirty) {
             action()
+            dirty = false
         }
-        dirty = false
     }
 
 

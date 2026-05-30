@@ -130,7 +130,13 @@ class MaaApiService(
 
                 304 -> {
                     Timber.d("$TAG: 304 Not Modified: $url")
-                    FetchResult(internalCache.get(api), false)
+                    val cached = internalCache.get(api)
+                    if (cached == null) {
+                        // 磁盘缓存已丢失但 ETag 还在，清掉让下次强制 200
+                        Timber.w("$TAG: 304 but cache missing, invalidating ETag: $url")
+                        eTagCache.invalidateUrl(url)
+                    }
+                    FetchResult(cached, false)
                 }
 
                 else -> {

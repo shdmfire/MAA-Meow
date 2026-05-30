@@ -18,6 +18,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import timber.log.Timber
@@ -39,7 +40,11 @@ class MaaResourceLoader(
         data class Loading(val message: String = "") : State()
         data class Reloading(val message: String = "") : State()
         data object Ready : State()
-        data class Failed(val message: String) : State()
+        /**
+         * @param permanent true = 资源文件缺失，重试无意义，需用户手动重新初始化；
+         *                  false = IPC/IO 临时失败，ensureLoaded() 可再次尝试加载。
+         */
+        data class Failed(val message: String, val permanent: Boolean = false) : State()
     }
 
     private val _state = MutableStateFlow<State>(State.NotLoaded)
@@ -47,6 +52,11 @@ class MaaResourceLoader(
 
     suspend fun load(clientType: String = chainState.getClientType()): Result<Unit> {
         _state.value = State.Loading()
+        if (!pathConfig.isResourceReady) {
+            Timber.e("MaaResourceLoader.load() aborted: resource not ready (version.json missing or app version mismatch)")
+            _state.value = State.Failed("资源未就绪，请重新初始化", permanent = true)
+            return Result.failure(Exception("Resource not ready"))
+        }
         Timber.i("MaaCore resources loading, client type=$clientType")
         try {
             doLoadDepsInfo(clientType)
@@ -139,22 +149,21 @@ class MaaResourceLoader(
     }
 
     suspend fun ensureLoaded(): Result<Unit> {
-        return when (_state.value) {
+        return when (val s = _state.value) {
             is State.Ready -> Result.success(Unit)
-            is State.Loading, is State.Reloading -> {
-                withContext(Dispatchers.IO) {
-                    if (_state.value is State.Ready) {
-                        Result.success(Unit)
-                    } else {
-                        Result.failure(
-                            Exception(
-                                (_state.value as? State.Failed)?.message ?: "Resource not loaded"
-                            )
-                        )
-                    }
-                }
+            is State.Failed -> if (s.permanent) {
+                // 资源文件缺失，重试无意义
+                Result.failure(Exception(s.message))
+            } else {
+                // 临时失败（IPC/IO），重新尝试加载
+                load()
             }
-
+            is State.Loading, is State.Reloading -> {
+                // 等待当前加载结束，避免并发启动时误报失败
+                val terminal = _state.first { it is State.Ready || it is State.Failed }
+                if (terminal is State.Ready) Result.success(Unit)
+                else Result.failure(Exception((terminal as State.Failed).message))
+            }
             else -> load()
         }
     }

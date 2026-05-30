@@ -4,18 +4,18 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import java.io.IOException
-import kotlin.coroutines.resume
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
-suspend fun Call.await(): Response = suspendCoroutine { continuation ->
+suspend fun Call.await(): Response = suspendCancellableCoroutine { continuation ->
+    continuation.invokeOnCancellation { cancel() }
     enqueue(object : Callback {
         override fun onFailure(call: Call, e: IOException) {
-            continuation.resumeWithException(e)
+            if (!continuation.isCancelled) continuation.resumeWithException(e)
         }
 
         override fun onResponse(call: Call, response: Response) {
-            continuation.resume(response)
+            continuation.resume(response) { _, _, _ -> runCatching { response.close() } }
         }
     })
 }

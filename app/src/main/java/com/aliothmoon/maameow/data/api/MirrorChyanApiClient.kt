@@ -26,19 +26,21 @@ class MirrorChyanApiClient(private val httpClient: HttpClientHelper) {
         return runCatching {
             val response = httpClient.get(api, query = query)
 
-            if (response.code == 500) {
-                throw MirrorChyanBizException(500, "更新服务不可用")
+            response.use { resp ->
+                if (resp.code == 500) {
+                    throw MirrorChyanBizException(500, "更新服务不可用")
+                }
+
+                val body = kotlin.runCatching {
+                    json.decodeFromString<MirrorChyanResponse>(resp.body.string())
+                }.getOrDefault(MirrorChyanResponse.UNKNOWN_ERR)
+
+                if (body.code != 0 && !fetchVersion) {
+                    throw MirrorChyanBizException(body.code, body.msg)
+                }
+
+                body.data ?: throw MirrorChyanBizException(-1, "数据为空")
             }
-
-            val body = kotlin.runCatching {
-                json.decodeFromString<MirrorChyanResponse>(response.body.string())
-            }.getOrDefault(MirrorChyanResponse.UNKNOWN_ERR)
-
-            if (body.code != 0 && !fetchVersion) {
-                throw MirrorChyanBizException(body.code, body.msg)
-            }
-
-            body.data ?: throw MirrorChyanBizException(-1, "数据为空")
         }.onFailure { e ->
             Timber.e(e, "MirrorChyan API 请求失败: $api")
         }

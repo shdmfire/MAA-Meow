@@ -60,4 +60,14 @@ class ETagCacheManager(
     fun invalidate() {
         prefs.edit { clear() }
     }
+
+    /**
+     * 清除单个 URL 的条件请求头，下次请求会强制拿完整响应
+     */
+    fun invalidateUrl(url: String) {
+        prefs.edit {
+            remove(ETAG_KEY_MAKER(url))
+            remove(LAST_MODIFIED_KEY_MAKER(url))
+        }
+    }
 }
