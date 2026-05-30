@@ -157,6 +157,15 @@ class ExpandedControlPanelViewModel(
         }
     }
 
+    fun onDuplicateNode(nodeId: String) {
+        viewModelScope.launch {
+            val newId = chainState.duplicateNode(nodeId)
+            if (newId.isNotEmpty()) {
+                _state.update { it.copy(selectedNodeId = newId) }
+            }
+        }
+    }
+
     fun onRenameNode(nodeId: String, newName: String) {
         viewModelScope.launch {
             chainState.renameNode(nodeId, newName)

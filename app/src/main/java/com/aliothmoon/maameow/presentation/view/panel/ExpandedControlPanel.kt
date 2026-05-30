@@ -163,6 +163,7 @@ fun ExpandedControlPanel(
                                     },
                                     onAddNode = viewModel::onAddNode,
                                     onRemoveNode = viewModel::onRemoveNode,
+                                    onDuplicateNode = viewModel::onDuplicateNode,
                                     onRenameNode = viewModel::onRenameNode,
                                     onSwitchProfile = viewModel::onSwitchProfile,
                                     onRenameProfile = viewModel::onRenameProfile,

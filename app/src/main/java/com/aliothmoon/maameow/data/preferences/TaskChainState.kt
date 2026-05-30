@@ -129,6 +129,45 @@ class TaskChainState(
         }
     }
 
+    /**
+     * 复制任务节点，插入到原节点正下方
+     * 名称规则：去掉末尾已有的 " N" 后缀得到基础名，取当前链中最小未占用的正整数 N，
+     * 命名为 "baseName N"，例如：作战 → 作战 2 → 作战 3
+     * 对应 WPF GuideUserControl PR#16733 复制按钮
+     *
+     * @return 新节点的 id，失败时返回空字符串
+     */
+    suspend fun duplicateNode(nodeId: String): String {
+        var newNodeId = ""
+        updateChain { current ->
+            val idx = current.indexOfFirst { it.id == nodeId }
+            if (idx >= 0) {
+                val src = current[idx]
+                // 去掉末尾 " N"（空格+数字）得到基础名
+                val baseName = src.name.replace(Regex(" \\d+$"), "")
+                // 收集链中所有以 "baseName N" 形式命名已占用的编号
+                val usedNumbers = current
+                    .mapNotNull { node ->
+                        Regex("^${Regex.escape(baseName)} (\\d+)$").matchEntire(node.name)
+                            ?.groupValues?.get(1)?.toIntOrNull()
+                    }
+                    .toSet()
+                // 取最小未占用的正整数（从 2 开始，1 留给源名称本身）
+                val nextNum = generateSequence(2) { it + 1 }.first { it !in usedNumbers }
+                val copy = src.copy(
+                    id = UUID.randomUUID().toString(),
+                    name = "$baseName $nextNum"
+                )
+                newNodeId = copy.id
+                current.add(idx + 1, copy)
+                Timber.d("Duplicated node %s → %s (\"%s\")", nodeId, copy.id, copy.name)
+            } else {
+                Timber.w("duplicateNode: node %s not found", nodeId)
+            }
+        }
+        return newNodeId
+    }
+
     suspend fun renameNode(nodeId: String, newName: String) {
         updateChain { current ->
             val idx = current.indexOfFirst { it.id == nodeId }

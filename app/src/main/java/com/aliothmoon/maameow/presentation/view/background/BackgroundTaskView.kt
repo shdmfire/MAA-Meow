@@ -422,6 +422,7 @@ fun BackgroundTaskView(
                                                     },
                                                     onAddNode = { viewModel.onAddNode(it) },
                                                     onRemoveNode = { viewModel.onRemoveNode(it) },
+                                                    onDuplicateNode = { viewModel.onDuplicateNode(it) },
                                                     onRenameNode = { id, name ->
                                                         viewModel.onRenameNode(
                                                             id,

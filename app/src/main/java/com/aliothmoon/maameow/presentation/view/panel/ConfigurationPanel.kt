@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ButtonDefaults
@@ -79,6 +80,7 @@ fun TaskConfigPanel(
     onConfigChange: (TaskParamProvider) -> Unit,
     onAddNode: (TaskTypeInfo) -> Unit,
     onRemoveNode: (String) -> Unit,
+    onDuplicateNode: (String) -> Unit,
     onRenameNode: (String, String) -> Unit,
     onSwitchProfile: (String) -> Unit,
     onRenameProfile: (String, String) -> Unit,
@@ -113,6 +115,7 @@ fun TaskConfigPanel(
                 TaskManagementView(
                     node = selectedNode,
                     onRename = { onRenameNode(selectedNode.id, it) },
+                    onDuplicate = { onDuplicateNode(selectedNode.id) },
                     onRemove = { onRemoveNode(selectedNode.id) }
                 )
             }
@@ -293,6 +296,7 @@ private fun TaskGalleryView(onAddNode: (TaskTypeInfo) -> Unit) {
 private fun TaskManagementView(
     node: TaskChainNode,
     onRename: (String) -> Unit,
+    onDuplicate: () -> Unit,
     onRemove: () -> Unit
 ) {
     var text by remember(node.id) { mutableStateOf(node.name) }
@@ -368,6 +372,18 @@ private fun TaskManagementView(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = onDuplicate,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(4.dp)
+        ) {
+            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(stringResource(R.string.panel_config_duplicate_task))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedButton(
             onClick = onRemove,
