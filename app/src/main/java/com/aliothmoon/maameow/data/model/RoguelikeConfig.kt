@@ -72,7 +72,15 @@ data class RoguelikeConfig(
     // 通用高级设置
     val delayAbortUntilCombatComplete: Boolean = false  // 战斗结束前延迟停止
 ) : TaskParamProvider {
-    override fun toTaskParams(): MaaTaskParams {
+    override fun toTaskParams(): MaaTaskParams = toTaskParams(normalizeCoreChar = { it })
+
+    /**
+     * @param normalizeCoreChar 将开局干员名归一化为简中名。
+     *   MaaCore 的 core_char 仅认简中名（BattleDataConfig::find_oper 只匹配 name 字段，
+     *   繁中/英文名会使 get_role 返回 Unknown 导致开局干员选择失败），
+     *   故下发前须把本地化名反查回简中名。对齐 WPF RoguelikeSettingsUserControlModel.cs:1073。
+     */
+    fun toTaskParams(normalizeCoreChar: (String) -> String): MaaTaskParams {
         // WPF 条件变量
         val squadIsProfessional = mode == RoguelikeMode.Collectible && theme != "Phantom" &&
                 squad in listOf("突击战术分队", "堡垒战术分队", "远程战术分队", "破坏战术分队")
@@ -86,7 +94,7 @@ data class RoguelikeConfig(
             put("mode", mode.value)  // MaaCore 期望整数值
             if (squad.isNotBlank()) put("squad", squad)
             if (roles.isNotBlank()) put("roles", roles)
-            if (coreChar.isNotBlank()) put("core_char", coreChar)
+            if (coreChar.isNotBlank()) put("core_char", normalizeCoreChar(coreChar))
             put("starts_count", startsCount)
 
             //  投资相关 

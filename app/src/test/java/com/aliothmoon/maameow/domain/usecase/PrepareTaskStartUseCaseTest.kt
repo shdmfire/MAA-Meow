@@ -5,6 +5,7 @@ import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.model.WakeUpConfig
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.data.preferences.TaskChainState
+import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.AppAliveChecker
 import com.aliothmoon.maameow.remote.AppAliveStatus
@@ -21,7 +22,8 @@ class PrepareTaskStartUseCaseTest {
     private val taskChainState = mockk<TaskChainState> {
         every { getClientType() } returns "Official"
     }
-    private val analyzeTaskChainUseCase = AnalyzeTaskChainUseCase(taskChainState)
+    private val resourceDataManager = mockk<ResourceDataManager>(relaxed = true)
+    private val analyzeTaskChainUseCase = AnalyzeTaskChainUseCase(taskChainState, resourceDataManager)
     private val appSettings = mockk<AppSettingsManager> {
         every { runMode } returns MutableStateFlow(RunMode.BACKGROUND)
     }
@@ -224,5 +226,7 @@ class PrepareTaskStartUseCaseTest {
             callCount += 1
             return status
         }
+
+        override suspend fun isAppOnBackgroundDisplay(packageName: String): Boolean? = null
     }
 }

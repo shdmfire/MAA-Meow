@@ -3,11 +3,18 @@ package com.aliothmoon.maameow.domain.usecase
 import com.aliothmoon.maameow.constant.Packages
 import com.aliothmoon.maameow.data.model.AwardConfig
 import com.aliothmoon.maameow.data.model.FightConfig
+import com.aliothmoon.maameow.data.model.RoguelikeConfig
 import com.aliothmoon.maameow.data.model.TaskChainNode
 import com.aliothmoon.maameow.data.model.WakeUpConfig
 import com.aliothmoon.maameow.data.preferences.TaskChainState
+import com.aliothmoon.maameow.data.resource.CharacterInfo
+import com.aliothmoon.maameow.data.resource.ResourceDataManager
+import com.aliothmoon.maameow.maa.task.MaaTaskType
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -18,7 +25,8 @@ class AnalyzeTaskChainUseCaseTest {
     private val taskChainState = mockk<TaskChainState> {
         every { getClientType() } returns "Official"
     }
-    private val useCase = AnalyzeTaskChainUseCase(taskChainState)
+    private val resourceDataManager = mockk<ResourceDataManager>(relaxed = true)
+    private val useCase = AnalyzeTaskChainUseCase(taskChainState, resourceDataManager)
 
     @Test
     fun returnsBlocked_whenNoTaskIsEnabled() {
@@ -142,5 +150,29 @@ class AnalyzeTaskChainUseCaseTest {
         assertEquals(Packages["Official"], ready.plan.gamePackageName)
         assertFalse(ready.plan.launchesGame)
         assertEquals(1, ready.plan.params.size)
+    }
+
+    @Test
+    fun roguelikeCoreChar_normalizedToSimplifiedChinese_beforeDispatch() {
+        // 繁中服选了繁中名,下发前须反查归一化为简中名(MaaCore core_char 仅认简中名)
+        every { resourceDataManager.getCharacterByNameOrAlias("維什戴爾") } returns
+            CharacterInfo(name = "维什戴尔")
+
+        val result = useCase(
+            listOf(
+                TaskChainNode(
+                    name = "自动肉鸽",
+                    enabled = true,
+                    config = RoguelikeConfig(coreChar = "維什戴爾"),
+                )
+            )
+        )
+
+        val ready = result as AnalyzeTaskChainResult.Ready
+        val roguelikeParams = ready.plan.params.first { it.type == MaaTaskType.ROGUELIKE }
+        val coreChar = Json.parseToJsonElement(roguelikeParams.params)
+            .jsonObject["core_char"]?.jsonPrimitive?.content
+
+        assertEquals("维什戴尔", coreChar)
     }
 }

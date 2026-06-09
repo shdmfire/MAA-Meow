@@ -9,7 +9,7 @@ import timber.log.Timber
 
 val useCaseModule = module {
     factory {
-        AnalyzeTaskChainUseCase(get())
+        AnalyzeTaskChainUseCase(get(), get())
     }
     factory {
         PrepareTaskStartUseCase(
