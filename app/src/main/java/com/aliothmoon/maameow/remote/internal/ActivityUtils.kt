@@ -5,6 +5,7 @@ import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Build
+import android.view.Display
 import com.aliothmoon.maameow.third.FakeContext
 import com.aliothmoon.maameow.third.Ln
 import com.aliothmoon.maameow.third.wrappers.ServiceManager
@@ -35,8 +36,8 @@ object ActivityUtils {
         val am = ServiceManager.getActivityManager()
         try {
             val launchOptions = ActivityOptions.makeBasic()
-            if (displayId != 0) {
-                launchOptions.setLaunchDisplayId(displayId)
+            if (displayId != Display.DEFAULT_DISPLAY) {
+                launchOptions.launchDisplayId = displayId
                 if (forceFullscreenOnVirtualDisplay) {
                     runCatching {
                         setLaunchWindowingMode?.invoke(launchOptions, WINDOWING_MODE_FULLSCREEN)
@@ -131,17 +132,27 @@ object ActivityUtils {
     private fun startViaAmCommand(intent: Intent, displayId: Int): Boolean {
         try {
             val intentUri = intent.toUri(Intent.URI_INTENT_SCHEME)
-            val args = arrayOf("am", "start", "--display", displayId.toString(), intentUri)
-            Ln.d("Executing: am start --display $displayId <intent-uri>")
+            val args = if (displayId == Display.DEFAULT_DISPLAY) {
+                arrayOf("am", "start", intentUri)
+            } else {
+                arrayOf("am", "start", "--display", displayId.toString(), intentUri)
+            }
+            Ln.i("startViaAmCommand: displayId=$displayId, exec: ${args.joinToString(" ")}")
             val process = Runtime.getRuntime().exec(args)
             val exitCode = process.waitFor()
+            // am start 输出量极小（远小于管道缓冲），先 waitFor 再读不会死锁
+            val stdout = process.inputStream.bufferedReader().use { it.readText() }.trim()
+            val stderr = process.errorStream.bufferedReader().use { it.readText() }.trim()
+            if (stdout.isNotEmpty()) Ln.i("startViaAmCommand: am stdout: $stdout")
+            if (stderr.isNotEmpty()) Ln.w("startViaAmCommand: am stderr: $stderr")
             if (exitCode != 0) {
-                Ln.w("am command exited with code $exitCode")
+                Ln.w("startViaAmCommand: am exited with code $exitCode")
                 return false
             }
+            Ln.i("startViaAmCommand: success (exitCode=0)")
             return true
         } catch (e: Exception) {
-            Ln.e("am command fallback also failed", e)
+            Ln.e("startViaAmCommand: am command fallback failed", e)
             return false
         }
     }
