@@ -8,6 +8,7 @@ import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.maa.task.MaaTaskParams
 import com.aliothmoon.maameow.maa.task.MaaTaskType
 import com.aliothmoon.maameow.utils.i18n.UiText
+import com.aliothmoon.maameow.utils.i18n.resolve
 import com.aliothmoon.maameow.utils.i18n.uiTextOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -116,21 +117,23 @@ class MiniGameDelegate(
             "MiniGame[%s]: selectedTaskName=%s, matchedDisplay=%s, matchedValue=%s, tipKey=%s, tip=%s, listSize=%d",
             source,
             selectedTaskName,
-            game?.display,
+            game?.display?.resolve(appContext),
             game?.value,
             game?.tipKey,
-            game?.tip?.replace("\n", "\\n"),
+            game?.tip?.resolve(appContext)?.replace("\n", "\\n"),
             miniGames.value.size
         )
     }
 
     companion object {
         val ENDINGS = listOf("A", "B", "C", "D", "E")
-        val EVENTS = listOf(
-            "" to "不选择",
-            "支援作战平台" to "支援作战平台",
-            "游侠" to "游侠",
-            "诡影迷踪" to "诡影迷踪",
+
+        // value 是拼入任务名的流水线片段，必须保持简中；display 走资源本地化
+        val EVENTS: List<Pair<String, UiText>> = listOf(
+            "" to uiTextOf(R.string.mini_game_sf_event_none),
+            "支援作战平台" to uiTextOf(R.string.mini_game_sf_event_support_platform),
+            "游侠" to uiTextOf(R.string.mini_game_sf_event_knight_errant),
+            "诡影迷踪" to uiTextOf(R.string.mini_game_sf_event_sly_shadows),
         )
     }
 }

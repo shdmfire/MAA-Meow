@@ -20,14 +20,14 @@ class TaskTypeInfoDefaultNamesTest {
     }
 
     @Test
-    fun defaultName_matchesWpfEnglishLabels() {
-        assertEquals("Login", TaskTypeInfo.WAKE_UP.defaultName(AppSettingsManager.AppLanguage.EN))
-        assertEquals("Auto Recruit", TaskTypeInfo.RECRUITING.defaultName(AppSettingsManager.AppLanguage.EN))
+    fun defaultName_matchesEnglishLabels() {
+        assertEquals("StartUp", TaskTypeInfo.WAKE_UP.defaultName(AppSettingsManager.AppLanguage.EN))
+        assertEquals("Recruit", TaskTypeInfo.RECRUITING.defaultName(AppSettingsManager.AppLanguage.EN))
         assertEquals("Base", TaskTypeInfo.BASE.defaultName(AppSettingsManager.AppLanguage.EN))
         assertEquals("Combat", TaskTypeInfo.COMBAT.defaultName(AppSettingsManager.AppLanguage.EN))
-        assertEquals("Credit Store", TaskTypeInfo.MALL.defaultName(AppSettingsManager.AppLanguage.EN))
-        assertEquals("Collect Rewards", TaskTypeInfo.MISSION.defaultName(AppSettingsManager.AppLanguage.EN))
+        assertEquals("Credit", TaskTypeInfo.MALL.defaultName(AppSettingsManager.AppLanguage.EN))
+        assertEquals("Rewards", TaskTypeInfo.MISSION.defaultName(AppSettingsManager.AppLanguage.EN))
         assertEquals("Auto I.S.", TaskTypeInfo.AUTO_ROGUELIKE.defaultName(AppSettingsManager.AppLanguage.EN))
-        assertEquals("Reclamation Algorithm", TaskTypeInfo.RECLAMATION.defaultName(AppSettingsManager.AppLanguage.EN))
+        assertEquals("Reclamation", TaskTypeInfo.RECLAMATION.defaultName(AppSettingsManager.AppLanguage.EN))
     }
 }

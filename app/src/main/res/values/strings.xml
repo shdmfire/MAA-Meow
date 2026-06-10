@@ -825,6 +825,42 @@
     <string name="panel_mini_game_ending">结局</string>
     <string name="panel_mini_game_preferred_events">优先系列事件</string>
 
+    <!-- mini game: data texts (names / tips, mirrors MaaWpfGui localization keys) -->
+    <string name="mini_game_empty_tip">在上方选择小游戏以开始运行。</string>
+    <string name="mini_game_low_version_tip">版本过低\n最低要求: %1$s</string>
+    <string name="mini_game_sf_event_none">不选择</string>
+    <string name="mini_game_sf_event_support_platform">支援作战平台</string>
+    <string name="mini_game_sf_event_knight_errant">游侠</string>
+    <string name="mini_game_sf_event_sly_shadows">诡影迷踪</string>
+    <string name="mini_game_name_ss_store">活动商店</string>
+    <string name="mini_game_tip_ss_store">请在活动商店页面开始。\n不买无限池。</string>
+    <string name="mini_game_name_green_ticket_store">绿票商店</string>
+    <string name="mini_game_tip_green_ticket_store">1层全买。\n2层买寻访凭证和招聘许可。</string>
+    <string name="mini_game_name_yellow_ticket_store">黄票商店</string>
+    <string name="mini_game_tip_yellow_ticket_store">请确保自己至少有258张黄票。</string>
+    <string name="mini_game_name_ra_store">生息演算商店</string>
+    <string name="mini_game_tip_ra_store">请在活动商店页面开始。</string>
+    <string name="mini_game_name_secret_front">隐秘战线</string>
+    <string name="mini_game_tip_secret_front">在选小队界面开始，如有存档须手动删除。\n第一次打自己看完把教程关了。\n推荐勾选游戏内 ｢继承上一支队伍发回的数据｣</string>
+    <string name="mini_game_name_pv">PV-烟花筹委会</string>
+    <string name="mini_game_tip_pv">从所选关卡开始并自动通关。若选择第一关，则从活动页最左侧开始；若选择其他关卡，请先进入上一关再返回以校准位置。</string>
+    <string name="mini_game_name_spa">卫戍协议：盟约</string>
+    <string name="mini_game_tip_spa">在活动主界面（有 ｢独立模拟｣ 处开始任务）\n在有存档时需要先手动放弃\n最高只测试过 ｢险境模拟｣\n如果已通关更高难度导致看不到 ｢险境模拟｣ 或 ｢标准模拟｣，需手动选择一次 ｢险境模拟｣ 难度\n手动通关 ｢标准模拟｣ 可以更快的刷分\n只能刷等级奖励，拿蚀刻章得打完所有的 ｢关键目标｣</string>
+    <string name="mini_game_name_os">OS-喀兰贸易技术研发部</string>
+    <string name="mini_game_tip_os">在活动主界面（右下角有 ｢开始重建｣ 处）开始任务。</string>
+    <string name="mini_game_name_rm_tr_1">次生预案 RM-TR-1</string>
+    <string name="mini_game_tip_rm_tr_1">过完新手教程后进入前哨支点，滑动到界面最左侧。</string>
+    <string name="mini_game_name_rm_1">次生预案 RM-1</string>
+    <string name="mini_game_tip_rm_1">刷 RM-TR-1 大约 3 小时，营建策略中，石材开采 线点到底，\n特约任命指定维什戴尔，然后尽量精二专三，携带 1 技能，\n带满 12 个干员，其余 11 个的费用需要低于维什戴尔，\n生产模块各带 1 个，手动进入关卡并退出，\n让 RM-1 位于屏幕中央，运行 MAA。</string>
+    <string name="mini_game_name_at_conversation_room">AT-相谈室</string>
+    <string name="mini_game_tip_at_conversation_room">在活动主界面（右下角有 ｢开始营业｣ 处）开始任务。</string>
+    <string name="mini_game_name_all_green_grass">争锋频道：青草城</string>
+    <string name="mini_game_name_all_honey_fruit">争锋频道：蜜果城</string>
+    <string name="mini_game_name_all_ivy_vine">争锋频道：绿藤城</string>
+    <string name="mini_game_tip_all_duel_channel">手动跳过教程对话，然后可以直接退出。\n在活动主界面（右下角有 ｢加入赛事｣ 处）开始任务。\n\n跟着鸭总喝口汤。</string>
+    <string name="mini_game_name_pf">阵地足球锦标赛</string>
+    <string name="mini_game_tip_pf">手动通过教程关卡后，进入 PF-1 进行手动编队，要求仅编入 ｢克洛丝｣ 单个干员，并回到在活动关卡界面点击 PF-1 后开始任务。</string>
+
     <!-- panel: task list -->
     <string name="panel_task_list_edit_config">编辑配置</string>
     <string name="panel_task_list_edit_tasks">编辑任务</string>

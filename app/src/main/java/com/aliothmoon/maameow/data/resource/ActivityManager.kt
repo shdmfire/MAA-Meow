@@ -9,6 +9,8 @@ import com.aliothmoon.maameow.data.model.activity.MiniGame
 import com.aliothmoon.maameow.data.model.activity.StageActivityInfo
 import com.aliothmoon.maameow.data.model.activity.StageActivityRoot
 import com.aliothmoon.maameow.data.preferences.TaskChainState
+import com.aliothmoon.maameow.utils.i18n.resolve
+import com.aliothmoon.maameow.utils.i18n.uiTextOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -161,11 +163,11 @@ class ActivityManager(
             DefaultMiniGames.ENTRIES.filter { it.value !in parsedValues }  // 按 value 去重
                 .map { entry ->
                     MiniGame(
-                        display = entry.display,
+                        display = uiTextOf(entry.displayRes),
                         value = entry.value,
                         utcStartTime = 0L,
                         utcExpireTime = Long.MAX_VALUE,
-                        tip = entry.tip
+                        tip = uiTextOf(entry.tipRes)
                     )
                 }
         val miniGames = parsedMiniGames + defaultMiniGames  // API 在前，默认在后
@@ -173,10 +175,10 @@ class ActivityManager(
             Timber.d(
                 "MiniGame[%d]: display=%s, value=%s, tipKey=%s, tip=%s, isOpen=%s, isUnsupported=%s",
                 index,
-                game.display,
+                game.display.resolve(context),
                 game.value,
                 game.tipKey,
-                game.tip?.replace("\n", "\\n"),
+                game.tip.resolve(context).replace("\n", "\\n"),
                 game.isOpen,
                 game.isUnsupported
             )

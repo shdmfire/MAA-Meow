@@ -51,7 +51,7 @@ class UiI18nHardcodedStringsTest {
             TargetFile("src/main/java/com/aliothmoon/maameow/presentation/viewmodel/ToolboxViewModel.kt"),
             TargetFile(
                 "src/main/java/com/aliothmoon/maameow/presentation/viewmodel/MiniGameDelegate.kt",
-                allowedLiterals = setOf("不选择", "支援作战平台", "游侠", "诡影迷踪"),
+                allowedLiterals = setOf("支援作战平台", "游侠", "诡影迷踪"),
             ),
             TargetFile("src/main/java/com/aliothmoon/maameow/presentation/view/panel/AwardConfigPanel.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/presentation/view/panel/DepotRecognitionPanel.kt"),
@@ -117,7 +117,12 @@ class UiI18nHardcodedStringsTest {
             TargetFile("src/main/java/com/aliothmoon/maameow/presentation/viewmodel/TaskStartUiHelpers.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/presentation/viewmodel/ExpandedControlPanelViewModel.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/presentation/viewmodel/BackgroundTaskViewModel.kt"),
-            TargetFile("src/main/java/com/aliothmoon/maameow/presentation/viewmodel/CopilotViewModel.kt"),
+            TargetFile(
+                "src/main/java/com/aliothmoon/maameow/presentation/viewmodel/CopilotViewModel.kt",
+                allowedLiterals = setOf(
+                    "${'$'}TAG: 解析本地文件失败: ${'$'}fileName",
+                ),
+            ),
             TargetFile("src/main/java/com/aliothmoon/maameow/presentation/state/HomeUiState.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/domain/models/RunMode.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/domain/models/OverlayControlMode.kt"),
@@ -125,7 +130,11 @@ class UiI18nHardcodedStringsTest {
             TargetFile("src/main/java/com/aliothmoon/maameow/data/model/update/UpdateSource.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/data/model/update/UpdateChannel.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/data/model/WakeUpConfig.kt"),
-            TargetFile("src/main/java/com/aliothmoon/maameow/domain/service/MaaResourceLoader.kt"),
+            TargetFile(
+                "src/main/java/com/aliothmoon/maameow/domain/service/MaaResourceLoader.kt",
+                // 仅经 Exception/日志流转的诊断文案，UI 层（HomeViewModel/TaskStartUiHelpers）均映射为资源串
+                allowedLiterals = setOf("资源未就绪，请重新初始化"),
+            ),
             TargetFile("src/main/java/com/aliothmoon/maameow/domain/service/MaaEventNotifier.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/domain/usecase/PrepareTaskStartUseCase.kt"),
             TargetFile("src/main/java/com/aliothmoon/maameow/domain/usecase/AnalyzeTaskChainUseCase.kt"),

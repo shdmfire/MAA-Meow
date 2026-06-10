@@ -774,6 +774,42 @@
     <string name="panel_mini_game_ending">Ending</string>
     <string name="panel_mini_game_preferred_events">Preferred Event Series</string>
 
+    <!-- mini game: data texts (names / tips, mirrors MaaWpfGui localization keys) -->
+    <string name="mini_game_empty_tip">Select a mini-game from above to start running.</string>
+    <string name="mini_game_low_version_tip">Old Version, Update required\nMinimum Requirements: %1$s</string>
+    <string name="mini_game_sf_event_none">None</string>
+    <string name="mini_game_sf_event_support_platform">Support Platform</string>
+    <string name="mini_game_sf_event_knight_errant">Knight-errant</string>
+    <string name="mini_game_sf_event_sly_shadows">Sly Shadows</string>
+    <string name="mini_game_name_ss_store">Event Shop</string>
+    <string name="mini_game_tip_ss_store">Please start from the event shop page.\nWon\'t buy items with unlimited purchase quantities.</string>
+    <string name="mini_game_name_green_ticket_store">Green Ticket Store</string>
+    <string name="mini_game_tip_green_ticket_store">Buy everything on the 1st floor.\nBuy Headhunting Permits and Recruitment Permits on the 2nd floor.</string>
+    <string name="mini_game_name_yellow_ticket_store">Yellow Ticket Store</string>
+    <string name="mini_game_tip_yellow_ticket_store">Please ensure you have at least 258 yellow tickets.</string>
+    <string name="mini_game_name_ra_store">Reclamation Algorithm Shop</string>
+    <string name="mini_game_tip_ra_store">Please start from the event shop page.</string>
+    <string name="mini_game_name_secret_front">Hidden Front</string>
+    <string name="mini_game_tip_secret_front">Start from the squad selection screen;\nIf there is a saved game, please delete it manually.\nClose the tutorial after playing it for the first time.\nRecommended to enable in-game ｢Inherit previous squad\'s data｣.</string>
+    <string name="mini_game_name_pv">PV - Fireworks Organizing Committee</string>
+    <string name="mini_game_tip_pv">Automatically clear from the selected stage. If you choose the first stage, start from the leftmost side of the event page; for other stages, enter the previous stage and then return to calibrate the position.</string>
+    <string name="mini_game_name_spa">Stronghold Protocol: Alliance</string>
+    <string name="mini_game_tip_spa">Start the task from the main event screen (where ｢Solo Simulation｣ is located)\nIf there is a saved game, you need to manually abandon it first\nOnly tested up to ｢Perilous Simulation｣\nIf higher difficulties have been cleared and ｢Perilous Simulation｣ or ｢Standard Simulation｣ is not visible, manually select ｢Perilous Simulation｣ difficulty once\nCompleting ｢Standard Simulation｣ manually allows faster score farming\nOnly level rewards can be farmed; to get the Engraved Medal, all ｢Key Objectives｣ must be completed</string>
+    <string name="mini_game_name_os">OS-Karlan Trade R&amp;D</string>
+    <string name="mini_game_tip_os">Start the task at the main minigame interface (where the \"START\" button is in the left bottom corner).</string>
+    <string name="mini_game_name_rm_tr_1">Rebuilding Mandate RM-TR-1</string>
+    <string name="mini_game_tip_rm_tr_1">After completing the tutorial, enter the Frontier Outposts and swipe all the way to the far left of the screen.</string>
+    <string name="mini_game_name_rm_1">Rebuilding Mandate RM-1</string>
+    <string name="mini_game_tip_rm_1">Farming RM-TR-1 takes about 3 hours.\nIn the Construction Strategies, max out the Stone Quarrying line;\nassign Wiš\'adel as the Special Appointment, then promote her to Elite 2 with Mastery 3 on Skill 1;\nbring a full squad of 12 operators. The remaining 11 must each have a lower deployment cost than Wiš\'adel;\nbring 1 production module each, then manually enter the stage and exit;\nposition RM-1 in the center of the screen and run MAA.</string>
+    <string name="mini_game_name_at_conversation_room">AT - Mikage Consultation Office - Mini Game</string>
+    <string name="mini_game_tip_at_conversation_room">Start the task from the event screen (there is a ｢OPEN｣ button in the bottom right corner).</string>
+    <string name="mini_game_name_all_green_grass">Duel Channel: Green Grassville</string>
+    <string name="mini_game_name_all_honey_fruit">Duel Channel: Honeydew</string>
+    <string name="mini_game_name_all_ivy_vine">Duel Channel: Ivyvine</string>
+    <string name="mini_game_tip_all_duel_channel">Manually skip the tutorial dialogue, then you can exit directly.\nStart the task from the event screen (there is a ｢Join Event｣ button in the bottom right corner).\n\nFollow the Duck Lord\'s choice.</string>
+    <string name="mini_game_name_pf">Positional Football Tournament</string>
+    <string name="mini_game_tip_pf">After manually clearing the tutorial stage, enter PF-1 to manually form a squad. Only ｢Kroos｣ should be deployed as the sole operator, then return to the event stage screen and tap PF-1 to start the task.</string>
+
     <!-- panel: task list -->
     <string name="panel_task_list_edit_config">Edit Config</string>
     <string name="panel_task_list_edit_tasks">Edit Tasks</string>

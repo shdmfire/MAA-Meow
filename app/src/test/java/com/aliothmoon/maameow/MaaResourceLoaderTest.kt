@@ -11,6 +11,7 @@ import com.aliothmoon.maameow.manager.RemoteServiceManager
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
@@ -40,6 +41,7 @@ class MaaResourceLoaderTest {
 
             val pathConfig = mockk<MaaPathConfig> {
                 every { this@mockk.rootDir } returns rootDir.absolutePath
+                every { isResourceReady } returns true
                 every { cacheDir } returns File(rootDir, "cache").absolutePath
                 every { cacheResourceDir } returns File(rootDir, "cache/resource").absolutePath
                 every { globalResourceDir("YoStarEN") } returns File(rootDir, "resource/global/YoStarEN/resource")
@@ -48,6 +50,8 @@ class MaaResourceLoaderTest {
             val appSettings = mockk<AppSettingsManager> {
                 every { debugMode } returns MutableStateFlow(false)
                 every { language } returns MutableStateFlow(AppSettingsManager.AppLanguage.EN)
+                every { forceFullscreenOnVirtualDisplay } returns MutableStateFlow(false)
+                every { tasksOverrideEnabled } returns MutableStateFlow(false)
             }
             val chainState = mockk<TaskChainState> {
                 every { getClientType() } returns "Official"
@@ -62,6 +66,7 @@ class MaaResourceLoaderTest {
             coEvery { itemHelper.load() } returns Unit
             coEvery { activityManager.load(any()) } returns Unit
             every { service.setup(any(), any()) } returns true
+            justRun { service.setForceFullscreenOnVirtualDisplay(any()) }
             every { service.maaCoreService } returns maaCore
             every { maaCore.LoadResource(any()) } returns true
 

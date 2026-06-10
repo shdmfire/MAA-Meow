@@ -1,40 +1,43 @@
 package com.aliothmoon.maameow.data.resource
 
+import androidx.annotation.StringRes
+import com.aliothmoon.maameow.R
+
 /**
  * 默认小游戏列表
  */
 object DefaultMiniGames {
     data class DefaultMiniGameEntry(
-        val display: String,
+        @param:StringRes val displayRes: Int,
         val value: String,
-        val tip: String? = null
+        @param:StringRes val tipRes: Int,
     )
 
     val ENTRIES = listOf(
         DefaultMiniGameEntry(
-            "活动商店",
+            R.string.mini_game_name_ss_store,
             "SS@Store@Begin",
-            "请在活动商店页面开始。\n不买无限池。"
+            R.string.mini_game_tip_ss_store
         ),
         DefaultMiniGameEntry(
-            "绿票商店",
+            R.string.mini_game_name_green_ticket_store,
             "GreenTicket@Store@Begin",
-            "1层全买。\n2层买寻访凭证和招聘许可。"
+            R.string.mini_game_tip_green_ticket_store
         ),
         DefaultMiniGameEntry(
-            "黄票商店",
+            R.string.mini_game_name_yellow_ticket_store,
             "YellowTicket@Store@Begin",
-            "请确保自己至少有258张黄票。"
+            R.string.mini_game_tip_yellow_ticket_store
         ),
         DefaultMiniGameEntry(
-            "生息演算商店",
+            R.string.mini_game_name_ra_store,
             "RA@Store@Begin",
-            "请在活动商店页面开始。"
+            R.string.mini_game_tip_ra_store
         ),
         DefaultMiniGameEntry(
-            "隐秘战线",
+            R.string.mini_game_name_secret_front,
             "MiniGame@SecretFront",
-            "在选小队界面开始，如有存档须手动删除。\n第一次打自己看完把教程关了。\n推荐勾选游戏内 ｢继承上一支队伍发回的数据｣"
+            R.string.mini_game_tip_secret_front
         )
     )
 }

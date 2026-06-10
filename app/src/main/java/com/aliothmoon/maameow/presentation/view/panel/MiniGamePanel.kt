@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.resource.MiniGameTextRegistry
 import com.aliothmoon.maameow.presentation.viewmodel.MiniGameDelegate
+import com.aliothmoon.maameow.utils.i18n.asString
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -46,9 +47,9 @@ fun MiniGamePanel(
     val miniGames by delegate.miniGames.collectAsStateWithLifecycle()
 
     val currentGame = delegate.findGame(state.selectedTaskName)
-    val tip = currentGame?.tip?.takeIf { it.isNotBlank() } ?: MiniGameTextRegistry.EMPTY_TIP
+    val tip = currentGame?.tip.asString().ifBlank { MiniGameTextRegistry.EMPTY_TIP.asString() }
     val isUnsupported = currentGame?.isUnsupported == true
-    val currentGameDisplay = currentGame?.display ?: ""
+    val currentGameDisplay = currentGame?.display.asString()
 
     val tabTitleTextStyle = MaterialTheme.typography.bodySmall.copy(
         fontSize = 13.sp,
@@ -116,7 +117,7 @@ fun MiniGamePanel(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     Text(
-                                        text = game.display,
+                                        text = game.display.asString(),
                                         style = tabTitleTextStyle,
                                         color = if (game.isUnsupported) {
                                             MaterialTheme.colorScheme.onErrorContainer
@@ -259,7 +260,7 @@ fun MiniGamePanel(
                                     .clickable { delegate.onEventSelected(value) }
                             ) {
                                 Text(
-                                    text = display,
+                                    text = display.asString(),
                                     style = tabTitleTextStyle,
                                     color = if (selected) {
                                         MaterialTheme.colorScheme.onPrimaryContainer
