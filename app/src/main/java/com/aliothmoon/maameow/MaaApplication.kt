@@ -56,13 +56,13 @@ class MaaApplication : Application() {
         crashHandler.init(this)
         overlayController.setup()
         unifiedStateDispatcher.start()
-        syncScheduleAlarms()
+        doSyncScheduleAlarms()
     }
 
     // BootReceiver 依赖 ACTION_MY_PACKAGE_REPLACED / BOOT_COMPLETED 恢复闹钟，
     // 但国产 ROM 在自启动未开启时会拦截该广播，导致闹钟丢失后无法恢复。
     // 每次应用启动时执行一次幂等同步，作为兜底保障。
-    private fun syncScheduleAlarms() {
+    private fun doSyncScheduleAlarms() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             scheduleRepository.isLoaded.filter { it }.first()
             scheduleAlarmManager.rescheduleAll(scheduleRepository.strategies.value)
