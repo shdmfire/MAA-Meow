@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.model.toolbox.DepotItem
 import com.aliothmoon.maameow.data.resource.ItemHelper
+import com.aliothmoon.maameow.domain.service.ToolboxExportFileType
 import com.aliothmoon.maameow.presentation.viewmodel.ToolboxViewModel
 import com.aliothmoon.maameow.utils.i18n.asString
 import kotlinx.coroutines.launch
@@ -62,8 +63,16 @@ fun DepotRecognitionPanel(
     val clipboard = LocalClipboard.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val exporter = LocalToolboxFileExporter.current
     val copyPenguinToast = stringResource(R.string.panel_depot_copy_penguin)
     val copyToolboxToast = stringResource(R.string.panel_depot_copy_toolbox)
+    val doCopy: (String, String) -> Unit = { text, toast ->
+        scope.launch {
+            val entry = ClipData.newPlainText("label", text).toClipEntry()
+            clipboard.setClipEntry(entry)
+        }
+        Toast.makeText(context, toast, Toast.LENGTH_SHORT).show()
+    }
 
     if (items.isEmpty()) {
         DepotEmptyState(modifier, resolvedStatusMessage)
@@ -87,47 +96,32 @@ fun DepotRecognitionPanel(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    TextButton(
-                        onClick = {
-                            scope.launch {
-                                val text = viewModel.exportDepotArkPlanner()
-                                val entry = ClipData.newPlainText("label", text).toClipEntry()
-                                clipboard.setClipEntry(entry)
-                            }
-                            Toast.makeText(context, copyPenguinToast, Toast.LENGTH_SHORT).show()
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            stringResource(R.string.panel_depot_export_penguin),
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                ExportFormatRow(
+                    label = stringResource(R.string.panel_depot_format_penguin),
+                    onCopy = { doCopy(viewModel.exportDepotArkPlanner(), copyPenguinToast) },
+                    onExportFile = exporter?.let {
+                        {
+                            it.export(
+                                "depot_penguin",
+                                viewModel.exportDepotArkPlanner(),
+                                ToolboxExportFileType.JSON
+                            )
+                        }
                     }
-                    TextButton(
-                        onClick = {
-                            scope.launch {
-                                val text = viewModel.exportDepotLolicon()
-                                val entry = ClipData.newPlainText("label", text).toClipEntry()
-                                clipboard.setClipEntry(entry)
-                            }
-                            Toast.makeText(context, copyToolboxToast, Toast.LENGTH_SHORT).show()
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            stringResource(R.string.panel_depot_export_toolbox),
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                )
+                ExportFormatRow(
+                    label = stringResource(R.string.panel_depot_format_toolbox),
+                    onCopy = { doCopy(viewModel.exportDepotLolicon(), copyToolboxToast) },
+                    onExportFile = exporter?.let {
+                        {
+                            it.export(
+                                "depot_arktools",
+                                viewModel.exportDepotLolicon(),
+                                ToolboxExportFileType.JSON
+                            )
+                        }
                     }
-                }
+                )
             }
         }
 
@@ -135,6 +129,49 @@ fun DepotRecognitionPanel(
         items(items, key = { it.id }) { item ->
             val name = itemMap[item.id]?.name
             DepotItemCell(item, name)
+        }
+    }
+}
+
+@Composable
+private fun ExportFormatRow(
+    label: String,
+    onCopy: () -> Unit,
+    onExportFile: (() -> Unit)?,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        TextButton(
+            onClick = onCopy,
+            modifier = Modifier.height(32.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+        ) {
+            Text(
+                stringResource(R.string.panel_export_copy),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        if (onExportFile != null) {
+            TextButton(
+                onClick = onExportFile,
+                modifier = Modifier.height(32.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+            ) {
+                Text(
+                    stringResource(R.string.panel_export_file),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }
