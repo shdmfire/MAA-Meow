@@ -28,6 +28,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import timber.log.Timber
@@ -36,9 +38,7 @@ class TaskExecutionService : Service() {
 
     companion object {
         private const val TASK_CHANNEL_ID = "task_execution_live"
-        private const val RESULT_CHANNEL_ID = "task_execution_result"
         private const val NOTIFICATION_ID = 9003
-        private const val RESULT_NOTIFICATION_ID = 9004
         private const val MIN_UPDATE_INTERVAL_MS = 1000L
         private const val PROGRESS_STYLE_MAX = 1000
         private const val PERMISSION_POST_PROMOTED_NOTIFICATIONS =
@@ -78,168 +78,129 @@ class TaskExecutionService : Service() {
     private val taskChainStatusTracker: TaskChainStatusTracker by inject()
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private var observeJob: Job? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         ensureNotificationChannel()
-        startAsForeground(
-            buildNotification(
-                TaskNotificationSnapshot(
-                    state = MaaExecutionState.STARTING,
-                    statusText = getString(R.string.notification_task_starting),
-                    tasks = emptyList(),
-                )
-            )
+        val initial = TaskNotificationSnapshot(
+            state = compositionService.state.value,
+            statusText = sessionLogger.logs.value.lastOrNull()?.content,
+            tasks = taskChainStatusTracker.tasks.value,
         )
+        startAsForeground(buildNotification(initial))
         observeProgress()
     }
 
     override fun onDestroy() {
         // 外部 stopService 与 StateFlow 收集存在竞态；此处兜底确保 Live Update 通知被清除。
+        // observeProgress 的 collector 由 serviceScope.cancel() 结构化取消。
         removeActiveNotification()
-        observeJob?.cancel()
         serviceScope.cancel()
         super.onDestroy()
     }
 
     private fun observeProgress() {
-        observeJob = serviceScope.launch {
+        serviceScope.launch {
             var lastUpdateTime = 0L
-            var pendingRunningSnapshot: TaskNotificationSnapshot? = null
-            var scheduledRunningUpdateJob: Job? = null
+            var pending: TaskNotificationSnapshot? = null
+            var scheduledJob: Job? = null
 
-            fun cancelScheduledRunningUpdate() {
-                scheduledRunningUpdateJob?.cancel()
-                scheduledRunningUpdateJob = null
-                pendingRunningSnapshot = null
+            fun resetSchedule() {
+                scheduledJob?.cancel()
+                scheduledJob = null
+                pending = null
             }
 
-            fun scheduleRunningUpdate(snapshot: TaskNotificationSnapshot) {
-                pendingRunningSnapshot = snapshot
+            fun forceUpdate(snapshot: TaskNotificationSnapshot) {
+                resetSchedule()
+                lastUpdateTime = SystemClock.elapsedRealtime()
+                updateNotification(snapshot)
+            }
 
+            fun throttledUpdate(snapshot: TaskNotificationSnapshot) {
                 val now = SystemClock.elapsedRealtime()
                 val elapsed = now - lastUpdateTime
                 if (elapsed >= MIN_UPDATE_INTERVAL_MS) {
                     lastUpdateTime = now
-                    val latestSnapshot = pendingRunningSnapshot ?: snapshot
-                    pendingRunningSnapshot = null
-                    scheduledRunningUpdateJob?.cancel()
-                    scheduledRunningUpdateJob = null
-                    updateNotification(latestSnapshot)
+                    updateNotification(snapshot)
                     return
                 }
-
-                if (scheduledRunningUpdateJob?.isActive == true) {
-                    return
-                }
-
-                scheduledRunningUpdateJob = serviceScope.launch {
+                pending = snapshot
+                if (scheduledJob?.isActive == true) return
+                scheduledJob = launch {
                     delay((MIN_UPDATE_INTERVAL_MS - elapsed).coerceAtLeast(0L))
-                    pendingRunningSnapshot?.let { latestSnapshot ->
+                    pending?.let {
                         lastUpdateTime = SystemClock.elapsedRealtime()
-                        pendingRunningSnapshot = null
-                        updateNotification(latestSnapshot)
+                        updateNotification(it)
                     }
-                    scheduledRunningUpdateJob = null
+                    pending = null
+                    scheduledJob = null
                 }
             }
 
-            fun handleSnapshot(snapshot: TaskNotificationSnapshot, immediate: Boolean) {
-                when (snapshot.state) {
-                    MaaExecutionState.IDLE,
-                    MaaExecutionState.ERROR,
-                    -> handleTerminalState(snapshot, ::cancelScheduledRunningUpdate)
-
-                    MaaExecutionState.STARTING -> {
-                        cancelScheduledRunningUpdate()
-                        updateNotification(
-                            snapshot.copy(statusText = getString(R.string.notification_task_starting))
-                        )
-                    }
-
-                    MaaExecutionState.STOPPING -> {
-                        cancelScheduledRunningUpdate()
-                        updateNotification(
-                            snapshot.copy(statusText = getString(R.string.notification_task_stopping))
-                        )
-                    }
-
-                    MaaExecutionState.RUNNING -> {
-                        val runningSnapshot = snapshot.copy(
-                            statusText = snapshot.statusText
-                                ?: getString(R.string.notification_task_running)
-                        )
-                        if (immediate) {
-                            cancelScheduledRunningUpdate()
-                            lastUpdateTime = SystemClock.elapsedRealtime()
-                            updateNotification(runningSnapshot)
-                        } else {
-                            scheduleRunningUpdate(runningSnapshot)
+            // 三个数据源合并为单一 Snapshot 流，distinctUntilChanged 避免无意义刷新。
+            combine(
+                compositionService.state,
+                taskChainStatusTracker.tasks,
+                sessionLogger.logs
+                    .map { it.lastOrNull()?.content }
+                    .distinctUntilChanged(),
+            ) { state, tasks, lastLog ->
+                TaskNotificationSnapshot(state, lastLog, tasks)
+            }
+                .distinctUntilChanged()
+                .collect { snapshot ->
+                    when (snapshot.state) {
+                        MaaExecutionState.IDLE,
+                        MaaExecutionState.ERROR -> {
+                            resetSchedule()
+                            handleTerminalState(snapshot)
                         }
+
+                        MaaExecutionState.STARTING -> forceUpdate(
+                            snapshot.copy(
+                                statusText = getString(R.string.notification_task_starting)
+                            )
+                        )
+
+                        MaaExecutionState.STOPPING -> forceUpdate(
+                            snapshot.copy(
+                                statusText = getString(R.string.notification_task_stopping)
+                            )
+                        )
+
+                        MaaExecutionState.RUNNING -> throttledUpdate(
+                            snapshot.copy(
+                                statusText = snapshot.statusText
+                                    ?: getString(R.string.notification_task_running)
+                            )
+                        )
                     }
                 }
-            }
-
-            launch {
-                combine(
-                    compositionService.state,
-                    taskChainStatusTracker.tasks,
-                ) { state, tasks ->
-                    TaskNotificationSnapshot(
-                        state = state,
-                        statusText = sessionLogger.logs.value.lastOrNull()?.content,
-                        tasks = tasks,
-                    )
-                }.collect { snapshot ->
-                    handleSnapshot(snapshot, immediate = true)
-                }
-            }
-
-            launch {
-                sessionLogger.logs.collect { logs ->
-                    val snapshot = TaskNotificationSnapshot(
-                        state = compositionService.state.value,
-                        statusText = logs.lastOrNull()?.content,
-                        tasks = taskChainStatusTracker.tasks.value,
-                    )
-                    handleSnapshot(snapshot, immediate = false)
-                }
-            }
         }
     }
 
-    private fun handleTerminalState(
-        snapshot: TaskNotificationSnapshot,
-        cancelScheduledRunningUpdate: () -> Unit,
-    ) {
-        cancelScheduledRunningUpdate()
-
-        val isCompleted = snapshot.state == MaaExecutionState.IDLE
-        val title = getString(
-            if (isCompleted) {
-                R.string.notification_task_completed
-            } else {
-                R.string.notification_task_error
-            }
-        )
-
+    private fun handleTerminalState(snapshot: TaskNotificationSnapshot) {
         Timber.i("TaskExecutionService: state=%s, stopping", snapshot.state)
-        showResultNotification(title, snapshot.statusText.orEmpty())
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        try {
+            manager.cancel(NOTIFICATION_ID)
+        } catch (e: SecurityException) {
+            Timber.w(e, "cancel blocked by POST_NOTIFICATIONS denial")
+        }
         stopSelf()
     }
 
     private fun ensureNotificationChannel() {
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val taskChannelName = getString(R.string.notification_channel_task_execution_live)
-        val resultChannelName = getString(R.string.notification_channel_task_execution_result)
         val channelDescription = getString(R.string.notification_channel_task_execution_desc)
 
         // Live updates must use DEFAULT+ importance to remain eligible for promoted ongoing
-        // notifications / Live Updates on supported devices. Result notifications stay LOW
-        // to reduce noise after the foreground task has ended.
+        // notifications / Live Updates on supported devices.
         val taskChannel = NotificationChannel(
             TASK_CHANNEL_ID,
             taskChannelName,
@@ -249,16 +210,7 @@ class TaskExecutionService : Service() {
             setShowBadge(false)
         }
 
-        val resultChannel = NotificationChannel(
-            RESULT_CHANNEL_ID,
-            resultChannelName,
-            NotificationManager.IMPORTANCE_LOW,
-        ).apply {
-            description = channelDescription
-            setShowBadge(false)
-        }
-
-        manager.createNotificationChannels(listOf(taskChannel, resultChannel))
+        manager.createNotificationChannel(taskChannel)
     }
 
     private fun startAsForeground(notification: Notification) {
@@ -277,15 +229,14 @@ class TaskExecutionService : Service() {
         val statusText = snapshot.statusText ?: defaultStatusText(snapshot.state)
         val progressInfo = buildProgressInfo(snapshot)
         val contentText = buildContentText(statusText, progressInfo)
-        val title = activeTaskName(snapshot)
-            ?: getString(R.string.notification_task_running_title)
+        val activeName = activeTaskName(snapshot)
+        val title = activeName ?: getString(R.string.notification_task_running_title)
 
         return buildCompatProgressNotification(
             title = title,
-            statusText = statusText,
             contentText = contentText,
             progressInfo = progressInfo,
-            activeTaskName = activeTaskName(snapshot),
+            activeTaskName = activeName,
         )
     }
 
@@ -299,7 +250,6 @@ class TaskExecutionService : Service() {
 
     private fun buildCompatProgressNotification(
         title: String,
-        statusText: String,
         contentText: String,
         progressInfo: TaskProgressInfo,
         activeTaskName: String?,
@@ -325,6 +275,7 @@ class TaskExecutionService : Service() {
         val shortCritical = when {
             progressInfo.progressLabel != null && activeTaskName != null ->
                 "${progressInfo.progressLabel} $activeTaskName"
+
             progressInfo.progressLabel != null -> progressInfo.progressLabel
             activeTaskName != null -> activeTaskName
             else -> null
@@ -350,7 +301,8 @@ class TaskExecutionService : Service() {
             .build()
     }
 
-private fun buildProgressInfo(snapshot: TaskNotificationSnapshot): TaskProgressInfo {
+    private fun buildProgressInfo(snapshot: TaskNotificationSnapshot): TaskProgressInfo {
+        // IDLE/ERROR 分支仅用于 onCreate fast-fail 时构建初始通知的兜底。
         val tasks = snapshot.tasks
         val total = tasks.size
         if (total == 0) {
@@ -439,14 +391,24 @@ private fun buildProgressInfo(snapshot: TaskNotificationSnapshot): TaskProgressI
     }
 
     private fun updateNotification(snapshot: TaskNotificationSnapshot) {
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(NOTIFICATION_ID, buildNotification(snapshot))
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        try {
+            manager.notify(NOTIFICATION_ID, buildNotification(snapshot))
+        } catch (e: SecurityException) {
+            // API 33+ 用户拒绝 POST_NOTIFICATIONS 时 notify 会抛 SecurityException；
+            // FGS 主线程不应被通知权限异常拖垮，对齐 MaaEventNotifier 的处理。
+            Timber.w(e, "notify blocked by POST_NOTIFICATIONS denial")
+        }
     }
 
     private fun removeActiveNotification() {
         stopForeground(STOP_FOREGROUND_REMOVE)
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.cancel(NOTIFICATION_ID)
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        try {
+            manager.cancel(NOTIFICATION_ID)
+        } catch (e: SecurityException) {
+            Timber.w(e, "cancel blocked by POST_NOTIFICATIONS denial")
+        }
     }
 
     private fun buildContentIntent(): PendingIntent {
@@ -459,21 +421,6 @@ private fun buildProgressInfo(snapshot: TaskNotificationSnapshot): TaskProgressI
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
-    }
-
-    private fun showResultNotification(title: String, text: String) {
-        removeActiveNotification()
-
-        val notification = NotificationCompat.Builder(this, RESULT_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_maa_logo)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setContentIntent(buildContentIntent())
-            .setAutoCancel(true)
-            .build()
-
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(RESULT_NOTIFICATION_ID, notification)
     }
 
     private data class TaskNotificationSnapshot(

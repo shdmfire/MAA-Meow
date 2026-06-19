@@ -3,6 +3,7 @@ package com.aliothmoon.maameow.maa.callback
 import com.alibaba.fastjson2.JSON
 import com.alibaba.fastjson2.JSONObject
 import com.aliothmoon.maameow.data.model.LogLevel
+import com.aliothmoon.maameow.domain.service.MaaNotificationCenter
 import com.aliothmoon.maameow.domain.service.MaaSessionLogger
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.maa.AsstMsg
@@ -14,6 +15,7 @@ class MaaCallbackDispatcher(
     private val connectionInfoHandler: ConnectionInfoHandler,
     private val taskChainHandler: TaskChainHandler,
     private val subTaskHandler: SubTaskHandler,
+    private val notificationCenter: MaaNotificationCenter,
 ) {
 
     fun dispatch(msg: Int, json: String?) {
