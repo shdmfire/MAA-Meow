@@ -13,6 +13,7 @@ import com.aliothmoon.maameow.data.preferences.ConfigBackupManager
 import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import com.aliothmoon.maameow.domain.models.RemoteBackend
+import com.aliothmoon.maameow.domain.models.ShizukuLaunchMode
 import com.aliothmoon.maameow.domain.service.AchievementReporter
 import com.aliothmoon.maameow.domain.service.MaaResourceLoader
 import com.aliothmoon.maameow.manager.PermissionManager
@@ -144,6 +145,24 @@ class SettingsViewModel(
     fun setSkipShizukuCheck(enabled: Boolean) {
         viewModelScope.launch {
             appSettingsManager.setSkipShizukuCheck(enabled)
+        }
+    }
+
+    val shizukuLaunchPackage: StateFlow<String> = appSettingsManager.shizukuLaunchPackage
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+
+    val shizukuLaunchMode: StateFlow<ShizukuLaunchMode> = appSettingsManager.shizukuLaunchMode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ShizukuLaunchMode.OFF)
+
+    fun setShizukuLaunchMode(mode: ShizukuLaunchMode) {
+        viewModelScope.launch {
+            appSettingsManager.setShizukuLaunchMode(mode)
+        }
+    }
+
+    fun setShizukuLaunchPackage(packageName: String) {
+        viewModelScope.launch {
+            appSettingsManager.setShizukuLaunchPackage(packageName)
         }
     }
 
