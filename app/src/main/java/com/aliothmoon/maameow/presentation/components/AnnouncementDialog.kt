@@ -133,6 +133,11 @@ fun AnnouncementDialog(
             safeInsets.calculateLeftPadding(layoutDirection),
             safeInsets.calculateRightPadding(layoutDirection)
         )
+        // 垂直安全区：避免居中弹窗底部按钮被状态栏/导航栏（手势条）遮挡
+        val maxVerticalInset = max(
+            safeInsets.calculateTopPadding(),
+            safeInsets.calculateBottomPadding()
+        )
 
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -142,7 +147,10 @@ fun AnnouncementDialog(
                 modifier = Modifier
                     .dialogWidth(max = 600.dp, fraction = 0.95f)
                     .heightIn(max = screenHeight * 0.85f)
-                    .padding(horizontal = maxHorizontalInset + 16.dp),
+                    .padding(
+                        horizontal = maxHorizontalInset + 16.dp,
+                        vertical = maxVerticalInset,
+                    ),
                 shape = RoundedCornerShape(12.dp),
                 color = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurface,
@@ -254,11 +262,12 @@ fun AnnouncementDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 公告内容（可滚动）
+                // 公告内容（可滚动）——用 weight 占据中间剩余空间（而非固定 0.55×屏高），
+                // 保证底部勾选框与确认按钮在任何屏幕高度/字体缩放下都不会被挤出弹窗裁掉
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(screenHeight * 0.55f)
+                        .weight(1f, fill = false)
                         .verticalScroll(scrollState),
                 ) {
                     if (imageBitmap != null) {
