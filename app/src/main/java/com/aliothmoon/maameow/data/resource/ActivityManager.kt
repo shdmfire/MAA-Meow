@@ -42,7 +42,7 @@ class ActivityManager(
 ) {
 
     private val _activityStages = MutableStateFlow<List<ActivityStage>>(emptyList())
-    private val _miniGames = MutableStateFlow<List<MiniGame>>(emptyList())
+    private val _miniGames = MutableStateFlow(doBuildDefaultMiniGames())
     private val _resourceCollection = MutableStateFlow<StageActivityInfo?>(null)
     private val _stages = MutableStateFlow<Map<String, MergedStageInfo>>(emptyMap())
 
@@ -150,37 +150,28 @@ class ActivityManager(
 
     private fun doParseMiniGame(activity: ClientStageActivity): List<MiniGame> {
         // 解析小游戏 (see WPF ParseMiniGameEntries)
-        val parsedMiniGames = activity.miniGame?.map { MiniGame.fromEntry(it) }
+        val parsed = activity.miniGame?.map { MiniGame.fromEntry(it) }
             ?.filter { it.isOpen }  // WPF: entry.BeingOpen
             ?: emptyList()
 
-        // 合并默认小游戏 (see WPF InitializeDefaultMiniGameEntries + InsertRange)
-        val parsedValues = parsedMiniGames.map { it.value }.toSet()
-        val defaultMiniGames =
-            DefaultMiniGames.ENTRIES.filter { it.value !in parsedValues }  // 按 value 去重
-                .map { entry ->
-                    MiniGame(
-                        display = uiTextOf(entry.displayRes),
-                        value = entry.value,
-                        utcStartTime = 0L,
-                        utcExpireTime = Long.MAX_VALUE,
-                        tip = uiTextOf(entry.tipRes)
-                    )
-                }
-        val miniGames = parsedMiniGames + defaultMiniGames  // API 在前，默认在后
-        miniGames.forEachIndexed { index, game ->
-            Timber.d(
-                "MiniGame[%d]: display=%s, value=%s, tipKey=%s, tip=%s, isOpen=%s, isUnsupported=%s",
-                index,
-                game.display.resolve(context),
-                game.value,
-                game.tipKey,
-                game.tip.resolve(context).replace("\n", "\\n"),
-                game.isOpen,
-                game.isUnsupported
-            )
+        // 合并默认小游戏
+        val parsedValues = parsed.map { it.value }.toSet()
+        val defaults = doBuildDefaultMiniGames().filter { it.value !in parsedValues }  // 按 value 去重
+        val games = parsed + defaults  // API 在前，默认在后
+        return games.also {
+            it.forEachIndexed { index, game ->
+                Timber.d(
+                    "MiniGame[%d]: display=%s, value=%s, tipKey=%s, tip=%s, isOpen=%s, isUnsupported=%s",
+                    index,
+                    game.display.resolve(context),
+                    game.value,
+                    game.tipKey,
+                    game.tip.resolve(context).replace("\n", "\\n"),
+                    game.isOpen,
+                    game.isUnsupported
+                )
+            }
         }
-        return miniGames
     }
 
     private fun doParseStageInfo(activity: ClientStageActivity): List<ActivityStage> {
@@ -267,8 +258,10 @@ class ActivityManager(
         // 2. 常驻关卡分组
         // InitializeDefaultStages()     固定关卡（剿灭等）
         val defaultStageItem = StageItem(
-            code = "", displayName = context.getString(R.string.panel_fight_stage_reset_current),
-            isActivityStage = false, isOpenToday = true
+            code = "",
+            displayName = context.getString(R.string.panel_fight_stage_reset_current),
+            isActivityStage = false,
+            isOpenToday = true
         )
 
         // AddPermanentStages()          常驻关卡（主线/资源本等）
@@ -383,15 +376,13 @@ class ActivityManager(
 
         // 今天的两个切换点
         val switchPoints = listOf(
-            today.atTime(4, 0).atZone(serverZone),
-            today.atTime(16, 0).atZone(serverZone)
+            today.atTime(4, 0).atZone(serverZone), today.atTime(16, 0).atZone(serverZone)
         )
 
         // 找到下一个切换点
         val nextSwitch =
-            switchPoints.firstOrNull { it.isAfter(now) }
-                ?: today.plusDays(1).atTime(4, 0)
-                    .atZone(serverZone)
+            switchPoints.firstOrNull { it.isAfter(now) } ?: today.plusDays(1).atTime(4, 0)
+                .atZone(serverZone)
 
         val baseDelay = ChronoUnit.MILLIS.between(now, nextSwitch)
         // 0~10 分钟随机延迟
@@ -543,9 +534,7 @@ class ActivityManager(
     // ============ 活动感知过期药辅助 ============
 
     data class ActivitySummary(
-        val name: String,
-        val daysLeft: Long,
-        val isExpiringSoon: Boolean
+        val name: String, val daysLeft: Long, val isExpiringSoon: Boolean
     )
 
     fun isAnyActivityExpiringSoon(): Boolean {
@@ -561,16 +550,24 @@ class ActivityManager(
     }
 
     fun getOpenActivitySummaries(): List<ActivitySummary> {
-        return _activityStages.value
-            .mapNotNull { it.activity }
-            .filter { it.isOpen }
-            .distinctBy { it.name }
-            .map { info ->
+        return _activityStages.value.mapNotNull { it.activity }.filter { it.isOpen }
+            .distinctBy { it.name }.map { info ->
                 val days = info.getDaysLeft()
                 ActivitySummary(
-                    name = info.name,
-                    daysLeft = days,
-                    isExpiringSoon = days < 2
+                    name = info.name, daysLeft = days, isExpiringSoon = days < 2
+                )
+            }
+    }
+
+    companion object {
+        private fun doBuildDefaultMiniGames(): List<MiniGame> =
+            DefaultMiniGames.ENTRIES.map { entry ->
+                MiniGame(
+                    display = uiTextOf(entry.displayRes),
+                    value = entry.value,
+                    utcStartTime = 0L,
+                    utcExpireTime = Long.MAX_VALUE,
+                    tip = uiTextOf(entry.tipRes)
                 )
             }
     }
