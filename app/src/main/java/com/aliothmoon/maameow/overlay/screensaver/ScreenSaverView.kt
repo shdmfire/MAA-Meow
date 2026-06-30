@@ -90,12 +90,22 @@ fun ScreenSaverView(
     var burnInOffsetX by remember { mutableIntStateOf(0) }
     var burnInOffsetY by remember { mutableIntStateOf(0) }
 
+    // 解锁条独立的防烧屏漂移：底部锚定 水平受两侧内边距限制保持小幅
+    // 垂直方向向上空间充足、向下受 56dp 底部内边距限制，故上大下小、不对称
+    val barDriftXPx = with(density) { 24.dp.roundToPx() }
+    val barDriftUpPx = with(density) { 80.dp.roundToPx() }
+    val barDriftDownPx = with(density) { 40.dp.roundToPx() }
+    var barOffsetX by remember { mutableIntStateOf(0) }
+    var barOffsetY by remember { mutableIntStateOf(0) }
+
     LaunchedEffect(Unit) {
         while (true) {
             currentTime = LocalTime.now()
             delay(30_000L)
             burnInOffsetX = if (maxOffsetXPx > 0) (-maxOffsetXPx..maxOffsetXPx).random() else 0
             burnInOffsetY = if (maxOffsetYPx > 0) (-maxOffsetYPx..maxOffsetYPx).random() else 0
+            barOffsetX = (-barDriftXPx..barDriftXPx).random()
+            barOffsetY = (-barDriftUpPx..barDriftDownPx).random() // 负=上(空间足) 正=下(限于底部内边距)
         }
     }
 
@@ -140,6 +150,7 @@ fun ScreenSaverView(
         SlideToUnlockBar(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .offset { IntOffset(barOffsetX, barOffsetY) }
                 .padding(bottom = 56.dp)
                 .padding(horizontal = 32.dp)
                 .fillMaxWidth(),
@@ -259,7 +270,7 @@ private fun SlideToUnlockBar(
                 .size(thumbDiameter)
                 .offset { IntOffset(displayOffset.toInt(), 0) }
                 .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.90f)),
+                .background(Color.White.copy(alpha = 0.50f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
