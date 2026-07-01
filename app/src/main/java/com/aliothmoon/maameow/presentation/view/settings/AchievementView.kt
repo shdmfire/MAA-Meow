@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,8 +34,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.data.achievement.AchievementCategory
+import com.aliothmoon.maameow.data.achievement.AchievementField
 import com.aliothmoon.maameow.data.achievement.AchievementState
-import com.aliothmoon.maameow.data.achievement.achievementText
 import com.aliothmoon.maameow.presentation.components.InfoCard
 import com.aliothmoon.maameow.presentation.components.TopAppBar
 import com.aliothmoon.maameow.presentation.viewmodel.AchievementEvent
@@ -119,7 +118,6 @@ fun AchievementView(
 @Composable
 private fun AchievementCard(achievement: AchievementState) {
     val color = achievementColor(achievement)
-    val context = LocalContext.current
     val dateFormat = remember { DateFormat.getDateTimeInstance() }
     InfoCard(contentColor = MaterialTheme.colorScheme.onSurface) {
         Row(
@@ -138,7 +136,7 @@ private fun AchievementCard(achievement: AchievementState) {
             ) {
                 Text(
                     text = if (achievement.unlocked) {
-                        context.achievementText(achievement.definition.id, "title")
+                        achievementText(achievement.definition.id, AchievementField.TITLE)
                     } else {
                         stringResource(R.string.achievement_locked_title)
                     },
@@ -148,7 +146,7 @@ private fun AchievementCard(achievement: AchievementState) {
 
                 Text(
                     text = if (achievement.unlocked) {
-                        context.achievementText(achievement.definition.id, "desc")
+                        achievementText(achievement.definition.id, AchievementField.DESC)
                     } else {
                         stringResource(R.string.achievement_locked_desc)
                     },
@@ -157,7 +155,7 @@ private fun AchievementCard(achievement: AchievementState) {
                 )
                 Text(
                     text = if (!achievement.definition.hidden || achievement.unlocked) {
-                        context.achievementText(achievement.definition.id, "condition")
+                        achievementText(achievement.definition.id, AchievementField.CONDITION)
                     } else {
                         stringResource(R.string.achievement_locked_condition)
                     },

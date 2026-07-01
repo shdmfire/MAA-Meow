@@ -24,11 +24,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.announcement.AnnouncementConfig
 import com.aliothmoon.maameow.constant.Routes
-import com.aliothmoon.maameow.data.achievement.AchievementRepository
-import com.aliothmoon.maameow.data.achievement.achievementText
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.ExternalNotificationService
@@ -43,6 +40,7 @@ import com.aliothmoon.maameow.presentation.view.settings.AchievementView
 import com.aliothmoon.maameow.presentation.view.settings.ErrorLogView
 import com.aliothmoon.maameow.presentation.view.settings.LogHistoryView
 import com.aliothmoon.maameow.presentation.view.settings.TaskOverrideEditorView
+import com.aliothmoon.maameow.presentation.viewmodel.AppEventsViewModel
 import com.aliothmoon.maameow.presentation.viewmodel.BackgroundTaskViewModel
 import com.aliothmoon.maameow.schedule.model.CountdownState
 import com.aliothmoon.maameow.schedule.ui.CountdownDialog
@@ -56,6 +54,7 @@ import com.dokar.sonner.rememberToasterState
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
 /** 主 Tab 路由集合（与 [BottomNavTab.all] 单一真源），用于判断是否处于主界面。 */
@@ -65,9 +64,9 @@ private val MAIN_TAB_ROUTES: Set<String> = BottomNavTab.all.mapTo(HashSet()) { i
 fun AppNavigation(
     backgroundTaskViewModel: BackgroundTaskViewModel,
     appSettings: AppSettingsManager = koinInject(),
-    achievementRepository: AchievementRepository = koinInject(),
     notificationService: ExternalNotificationService = koinInject(),
     overlayController: OverlayController = koinInject(),
+    appEventsViewModel: AppEventsViewModel = koinViewModel(),
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -85,7 +84,6 @@ fun AppNavigation(
 
     val runMode by appSettings.runMode.collectAsStateWithLifecycle()
     val announcementReadVersion by appSettings.announcementReadVersion.collectAsStateWithLifecycle()
-    val showAchievementSnackbar by appSettings.showAchievementSnackbar.collectAsStateWithLifecycle()
     val language by appSettings.language.collectAsStateWithLifecycle()
     val scheduledCountdownState by backgroundTaskViewModel.coordinator.countdownState.collectAsStateWithLifecycle()
 
@@ -122,15 +120,11 @@ fun AppNavigation(
             }
         }
     }
-    LaunchedEffect(achievementRepository, showAchievementSnackbar) {
-        if (showAchievementSnackbar) {
-            achievementRepository.unlockEvents.collect { id ->
-                val title = context.achievementText(id, "title")
-                toaster.show(
-                    message = context.getString(
-                        R.string.achievement_unlocked_message,
-                        title,
-                    ),
+    LaunchedEffect(appEventsViewModel) {
+        appEventsViewModel.effects.collect { effect ->
+            when (effect) {
+                is UiEffect.Toast -> toaster.show(
+                    message = effect.message.resolve(context),
                     type = ToastType.Success,
                 )
             }

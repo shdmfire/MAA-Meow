@@ -1,6 +1,6 @@
 package com.aliothmoon.maameow.data.notification.provider
 
-import android.text.TextUtils
+import androidx.core.text.htmlEncode
 import com.aliothmoon.maameow.data.notification.NotificationSettingsManager
 import jakarta.mail.Authenticator
 import jakarta.mail.Message
@@ -77,8 +77,8 @@ class SmtpProvider(
     }
 
     private fun buildHtmlBody(title: String, content: String): String {
-        val safeTitle = TextUtils.htmlEncode(title)
-        val safeContent = TextUtils.htmlEncode(content)
+        val safeTitle = title.htmlEncode()
+        val safeContent = content.htmlEncode()
             .replace("\r", "")
             .replace("\n", "<br/>")
 

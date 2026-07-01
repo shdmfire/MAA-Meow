@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliothmoon.maameow.data.achievement.AchievementDefinitions
 import com.aliothmoon.maameow.data.achievement.AchievementEvents
+import com.aliothmoon.maameow.data.achievement.AchievementField
 import com.aliothmoon.maameow.data.achievement.AchievementRepository
 import com.aliothmoon.maameow.data.achievement.AchievementState
 import com.aliothmoon.maameow.data.achievement.achievementText
@@ -48,7 +49,7 @@ class AchievementViewModel(
         } else {
             val ctx = ContextCompat.getContextForLanguage(application)
             all.filter { state ->
-                state.unlocked && ctx.achievementText(state.definition.id, "title")
+                state.unlocked && ctx.achievementText(state.definition.id, AchievementField.TITLE)
                     .contains(normalized, ignoreCase = true)
             }
         }

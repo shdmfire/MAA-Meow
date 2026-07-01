@@ -6,11 +6,11 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.view.ViewGroup
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
@@ -22,8 +22,8 @@ import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.overlay.border.BorderOverlayManager
 import com.aliothmoon.maameow.presentation.LocalFloatingWindowContext
-import com.aliothmoon.maameow.schedule.model.CountdownState
 import com.aliothmoon.maameow.presentation.view.panel.ExpandedControlPanel
+import com.aliothmoon.maameow.schedule.model.CountdownState
 import com.aliothmoon.maameow.service.AccessibilityHelperService
 import com.aliothmoon.maameow.theme.MaaMeowTheme
 import com.aliothmoon.maameow.utils.Misc
@@ -57,7 +57,7 @@ class OverlayController(
     companion object {
         private const val MAIN_PANEL_TAG = "MP_TAG"
         private const val FLOAT_BALL_TAG = "FB_TAG"
-        private val ENABLE_LOG = false
+        private const val ENABLE_LOG = false
     }
 
     private val _isLocked = MutableStateFlow(true)

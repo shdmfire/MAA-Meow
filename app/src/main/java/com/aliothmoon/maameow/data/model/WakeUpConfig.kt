@@ -1,7 +1,7 @@
 package com.aliothmoon.maameow.data.model
+
 import com.aliothmoon.maameow.maa.task.MaaTaskParams
 import com.aliothmoon.maameow.maa.task.MaaTaskType
-import com.aliothmoon.maameow.data.model.TaskParamProvider
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -76,10 +76,11 @@ data class WakeUpConfig(
     /**
      * 获取服务器类型
      */
-    fun getServerType(): String = Companion.getServerType(clientType)
+    fun getServerType(): String = getServerType(clientType)
     override fun toTaskParams(): MaaTaskParams {
         val normalizedAccountName = accountName.trim()
-        val canSwitchAccount = clientType == "Official" || clientType == "Bilibili" || clientType == "txwy"
+        val canSwitchAccount =
+            clientType == "Official" || clientType == "Bilibili" || clientType == "txwy"
         val paramsJson = buildJsonObject {
             put("client_type", clientType)
             put("start_game_enabled", startGameEnabled)

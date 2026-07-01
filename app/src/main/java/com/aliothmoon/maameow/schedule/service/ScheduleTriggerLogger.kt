@@ -71,7 +71,9 @@ class ScheduleTriggerLogger(private val pathConfig: MaaPathConfig) {
 
     @Synchronized
     fun append(message: String) {
-        val w = writer ?: return
+        if (writer == null) {
+            return
+        }
         try {
             val entry = TriggerLogEntry.Log(
                 time = System.currentTimeMillis(),
@@ -85,7 +87,9 @@ class ScheduleTriggerLogger(private val pathConfig: MaaPathConfig) {
 
     @Synchronized
     fun end(result: ExecutionResult, message: String? = null) {
-        val w = writer ?: return
+        if (writer == null) {
+            return
+        }
         try {
             val footer = TriggerLogEntry.Footer(
                 time = System.currentTimeMillis(),

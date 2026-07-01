@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.aliothmoon.maameow.R
-import com.aliothmoon.maameow.data.achievement.achievementText
+import com.aliothmoon.maameow.data.achievement.AchievementField
 import com.aliothmoon.maameow.presentation.components.InfoCard
 import com.aliothmoon.maameow.presentation.components.TopAppBar
 import com.aliothmoon.maameow.presentation.viewmodel.AchievementEffect
@@ -133,7 +133,7 @@ fun AchievementDebugView(
                                     )
                                     Text(
                                         text = "${state.definition.id} - ${
-                                            context.achievementText(state.definition.id, "title")
+                                            achievementText(state.definition.id, AchievementField.TITLE)
                                         }",
                                         style = MaterialTheme.typography.bodyMedium,
                                         maxLines = 1,
