@@ -51,11 +51,11 @@ One-click automation for all daily tasks, powered by image recognition
 
 | Document | Description |
 |---|---|
-| [Build Guide](docs/BUILDING.md) | Build APK from source |
-| [External Automation](docs/AUTOMATION.md) | Launch profiles via Intent / am with MacroDroid or Tasker |
-| [Roadmap](docs/ROADMAP.md) | Feature plans & progress |
-| [PR Guidelines](docs/PULL_REQUEST_GUIDELINES_EN.md) | Pull request title, description, verification, and review conventions |
-| [Third-Party Notices](docs/THIRD_PARTY_NOTICES.md) | Open-source components & licenses |
+| [Build Guide](docs/en-us/develop/BUILDING.md) | Build APK from source |
+| [External Automation](docs/en-us/develop/AUTOMATION.md) | Launch profiles via Intent / am with MacroDroid or Tasker |
+| [Roadmap](docs/en-us/develop/ROADMAP.md) | Feature plans & progress |
+| [PR Guidelines](docs/en-us/develop/PULL_REQUEST_GUIDELINES.md) | Pull request title, description, verification, and review conventions |
+| [Third-Party Notices](docs/en-us/develop/THIRD_PARTY_NOTICES.md) | Open-source components & licenses |
 
 ## Contributing
 
@@ -68,8 +68,8 @@ Pull requests are welcome! Whether it's a bug fix, UX improvement, or a new feat
 5. Open a Pull Request
 
 > Please follow the [Conventional Commits](https://www.conventionalcommits.org/) specification (`feat:`, `fix:`, `docs:`, etc.).
-> See the [Build Guide](docs/BUILDING.md) for first-time setup.
-> Read the [PR Guidelines](docs/PULL_REQUEST_GUIDELINES_EN.md) before opening a pull request.
+> See the [Build Guide](docs/en-us/develop/BUILDING.md) for first-time setup.
+> Read the [PR Guidelines](docs/en-us/develop/PULL_REQUEST_GUIDELINES.md) before opening a pull request.
 
 If you find this project useful, consider giving it a Star ⭐ to help others discover it!
 
@@ -81,4 +81,4 @@ If you find this project useful, consider giving it a Star ⭐ to help others di
 
 ## License
 
-This project is licensed under [AGPL-3.0](LICENSE). Third-party code retains its original license — see [Third-Party Notices](docs/THIRD_PARTY_NOTICES.md).
+This project is licensed under [AGPL-3.0](LICENSE). Third-party code retains its original license — see [Third-Party Notices](docs/en-us/develop/THIRD_PARTY_NOTICES.md).

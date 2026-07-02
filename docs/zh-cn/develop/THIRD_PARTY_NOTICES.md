@@ -6,9 +6,9 @@
 
 - **项目地址**：[Genymobile/scrcpy](https://github.com/Genymobile/scrcpy)
 - **版权**：Copyright 2018 Genymobile
-- **许可证**：[Apache License 2.0](../LICENSE-Apache-2.0)
+- **许可证**：[Apache License 2.0](../../../LICENSE-Apache-2.0)
 - **原始代码**：[server/src/main/java/com/genymobile/scrcpy](https://github.com/Genymobile/scrcpy/tree/master/server/src/main/java/com/genymobile/scrcpy)
-- **本项目中的位置**：[`app/src/main/java/com/aliothmoon/maameow/third/`](../app/src/main/java/com/aliothmoon/maameow/third/)
+- **本项目中的位置**：[`app/src/main/java/com/aliothmoon/maameow/third/`](../../../app/src/main/java/com/aliothmoon/maameow/third/)
 
 ### 用途
 

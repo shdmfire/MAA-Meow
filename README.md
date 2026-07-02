@@ -51,11 +51,11 @@
 
 | 文档 | 说明 |
 |---|---|
-| [构建指南](docs/BUILDING.md) | 从源码构建 APK |
-| [外部自动化集成](docs/AUTOMATION.md) | 通过 Intent / am 命令与 MacroDroid、Tasker 联动 |
-| [Roadmap](docs/ROADMAP.md) | 功能规划与进度 |
-| [PR 规范](docs/PULL_REQUEST_GUIDELINES.md) | 提交 PR 前的标题、描述、验证与评审约定 |
-| [第三方代码声明](docs/THIRD_PARTY_NOTICES.md) | 引用的开源组件及许可证 |
+| [构建指南](docs/zh-cn/develop/BUILDING.md) | 从源码构建 APK |
+| [外部自动化集成](docs/zh-cn/develop/AUTOMATION.md) | 通过 Intent / am 命令与 MacroDroid、Tasker 联动 |
+| [Roadmap](docs/zh-cn/develop/ROADMAP.md) | 功能规划与进度 |
+| [PR 规范](docs/zh-cn/develop/PULL_REQUEST_GUIDELINES.md) | 提交 PR 前的标题、描述、验证与评审约定 |
+| [第三方代码声明](docs/zh-cn/develop/THIRD_PARTY_NOTICES.md) | 引用的开源组件及许可证 |
 
 ## 参与贡献
 
@@ -68,8 +68,8 @@
 5. 发起 Pull Request
 
 > 提交信息请遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范（`feat:`、`fix:`、`docs:` 等）。
-> 首次构建请参阅 [构建指南](docs/BUILDING.md)。
-> 提交 PR 前请阅读 [PR 规范](docs/PULL_REQUEST_GUIDELINES.md)。
+> 首次构建请参阅 [构建指南](docs/zh-cn/develop/BUILDING.md)。
+> 提交 PR 前请阅读 [PR 规范](docs/zh-cn/develop/PULL_REQUEST_GUIDELINES.md)。
 
 如果觉得项目有用，欢迎点一个 Star ⭐ 让更多人看到！
 
@@ -81,4 +81,4 @@
 
 ## 许可证
 
-本项目以 [AGPL-3.0](LICENSE) 许可证发布。第三方代码保留其原始许可证，详见[第三方代码声明](docs/THIRD_PARTY_NOTICES.md)。
+本项目以 [AGPL-3.0](LICENSE) 许可证发布。第三方代码保留其原始许可证，详见[第三方代码声明](docs/zh-cn/develop/THIRD_PARTY_NOTICES.md)。
