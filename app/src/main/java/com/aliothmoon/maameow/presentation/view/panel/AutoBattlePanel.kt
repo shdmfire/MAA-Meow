@@ -329,11 +329,13 @@ fun AutoBattlePanel(
                         contentPadding = compactButtonPadding
                     ) {
                         Text(
-                            if (state.isLoading) {
+                            text = if (state.isLoading) {
                                 stringResource(R.string.panel_autobattle_loading)
                             } else {
                                 stringResource(R.string.panel_autobattle_read_single)
-                            }
+                            },
+                            maxLines = 1,
+                            softWrap = false,
                         )
                     }
                     Button(
@@ -342,7 +344,11 @@ fun AutoBattlePanel(
                         shape = compactButtonShape,
                         contentPadding = compactButtonPadding
                     ) {
-                        Text(stringResource(R.string.panel_autobattle_read_set))
+                        Text(
+                            text = stringResource(R.string.panel_autobattle_read_set),
+                            maxLines = 1,
+                            softWrap = false,
+                        )
                     }
                     OutlinedButton(
                         onClick = {
@@ -356,14 +362,22 @@ fun AutoBattlePanel(
                         shape = compactButtonShape,
                         contentPadding = compactButtonPadding
                     ) {
-                        Text(stringResource(R.string.copilot_import_file))
+                        Text(
+                            text = stringResource(R.string.copilot_import_file),
+                            maxLines = 1,
+                            softWrap = false,
+                        )
                     }
                     OutlinedButton(
                         onClick = { Misc.openUriSafely(context, "https://zoot.plus") },
                         shape = compactButtonShape,
                         contentPadding = compactButtonPadding
                     ) {
-                        Text(stringResource(R.string.panel_autobattle_station))
+                        Text(
+                            text = stringResource(R.string.panel_autobattle_station),
+                            maxLines = 1,
+                            softWrap = false,
+                        )
                     }
                 }
             }
