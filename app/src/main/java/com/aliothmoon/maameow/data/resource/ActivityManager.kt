@@ -452,6 +452,19 @@ class ActivityManager(
     }
 
     /**
+     * 判断指定关卡今日是否开放（鹰角历）。
+     *
+     * 迁移自 WPF StageManager.IsStageOpen：先经 [getStageInfo] 兜底再判定开放状态，
+     * 因此不在候选列表中的「数字型主线关卡」（如 16-14）会被当作常规关卡 → 永远开放；
+     * 「两字母-数字」的过期活动关卡（如 UR-5）→ 判为未开放；空串（当前/上次）→ 视为开放。
+     *
+     * 注意：不要用 [getMergedStageList] 的成员资格来判断开放，那只是 UI 候选池、不含主线关卡。
+     */
+    fun isStageOpen(stage: String, dayOfWeek: DayOfWeek = getYjDayOfWeek()): Boolean {
+        return getStageInfo(stage).isStageOpen(dayOfWeek)
+    }
+
+    /**
      * 判断指定关卡是否为常驻关卡（无周期限制且非限时活动，每天都开放）。
      *
      * 迁移自 WPF FightSettingsUserControlModel.IsPermanentStage：

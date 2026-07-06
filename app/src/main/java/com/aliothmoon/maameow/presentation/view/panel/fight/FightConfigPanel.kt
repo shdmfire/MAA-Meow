@@ -58,7 +58,6 @@ import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.StageAliasMapper
 import com.aliothmoon.maameow.data.resource.StageGroup
-import com.aliothmoon.maameow.data.resource.StageItem
 import com.aliothmoon.maameow.domain.enums.UiUsageConstants
 import com.aliothmoon.maameow.presentation.components.CheckBoxWithExpandableTip
 import com.aliothmoon.maameow.presentation.components.CheckBoxWithLabel
@@ -89,7 +88,6 @@ fun FightConfigPanel(
 
     val dropItemsList by itemHelper.dropItems.collectAsStateWithLifecycle()
     val activityStages by activityManager.activityStages.collectAsStateWithLifecycle()
-    val allStageItems = remember(activityStages) { activityManager.getMergedStageList(filterByToday = false) }
     val stageTips = remember(activityStages) { activityManager.getStageTips() }
     val todayName = remember(activityStages) { activityManager.getYjDayOfWeekName() }
 
@@ -202,12 +200,10 @@ fun FightConfigPanel(
                         item {
                             // 关卡选择
                             // stageGroups: 分组后的关卡列表（用于分组显示）
-                            // allStageItems: 完整列表（用于剩余理智关卡选择）
                             GroupedStageSelectionSection(
                                 config = config,
                                 onConfigChange = onConfigChange,
                                 stageGroups = stageGroups,
-                                allStageItems = allStageItems,
                                 activityManager = activityManager
                             )
                         }
@@ -490,14 +486,12 @@ private fun StageResetModeSection(
  * 支持活动关卡和常驻关卡分组显示
  *
  * @param stageGroups 分组后的关卡列表
- * @param allStageItems 完整关卡列表（用于剩余理智关卡选择）
  */
 @Composable
 private fun GroupedStageSelectionSection(
     config: FightConfig,
     onConfigChange: (FightConfig) -> Unit,
     stageGroups: List<StageGroup>,
-    allStageItems: List<StageItem>,
     activityManager: ActivityManager
 ) {
     // (i) 仅放选关机制/手动输入说明，默认折叠；实时状态（当前执行/告警）见下方状态卡片
@@ -508,30 +502,18 @@ private fun GroupedStageSelectionSection(
         stageGroups.flatMap { group -> group.stages.map { it.code } }
     }
 
-    // 构建关卡代码到 StageItem 的映射
-    val stageMap = remember(allStageItems) {
-        allStageItems.associateBy { it.code }
-    }
-
-    // 检查关卡是否今日开放
-    fun isStageOpenToday(stageCode: String): Boolean {
-        if (stageCode.isBlank()) return true
-        return stageMap[stageCode]?.isOpenToday ?: true
-    }
-
-    // 检查首选关卡开放状态
-    val stage1Open = isStageOpenToday(config.stage1)
+    // 首选关卡今日是否开放：经 activityManager.isStageOpen（getStageInfo 兜底）判定，对齐 WPF
+    // StageManager.IsStageOpen —— 主线关卡等不在候选列表中的关卡按常规关卡处理，视为开放；空关卡视为开放
+    val stage1Open = config.stage1.isBlank() || activityManager.isStageOpen(config.stage1)
     val annihilationOptions = localizedAnnihilationOptions()
 
-    // 当前执行关卡（对齐 WPF StagePlanTip）
-    val executingStage = remember(config.stage1, config.alternateStages, config.useAlternateStage, stageMap) {
-        if (config.stage1.isEmpty()) return@remember ""
-        val candidates = if (config.useAlternateStage) {
-            listOf(config.stage1) + config.alternateStages
-        } else {
-            listOf(config.stage1)
-        }.filter { it.isNotEmpty() }
-        candidates.firstOrNull { stageMap[it]?.isOpenToday == true } ?: candidates.firstOrNull() ?: ""
+    // 当前执行关卡：直接复用 config.getActiveStage()，与实际下发 core 的选关完全一致
+    // （对齐 WPF：tip 与 SerializeTask 共用 GetFightStage，避免「显示」与「执行」分叉）
+    val executingStage = remember(
+        config.stage1, config.alternateStages, config.useAlternateStage,
+        config.customStageCode, config.stageResetMode, stageGroups
+    ) {
+        config.getActiveStage()
     }
     val defaultStageLabel = stringResource(R.string.panel_fight_stage_reset_current)
 
@@ -540,7 +522,7 @@ private fun GroupedStageSelectionSection(
     // 时更会直接 return ""，两种情况下其后配置的备选关卡都永远不会被执行，需提示用户。
     val alternatesBlocked = remember(
         config.stage1, config.alternateStages,
-        config.useAlternateStage, executingStage, stageMap
+        config.useAlternateStage, executingStage
     ) {
         if (!config.useAlternateStage) return@remember false
         val alternates = config.alternateStages

@@ -280,18 +280,21 @@ data class FightConfig(
 
         val activityManager = GlobalContext.getOrNull()?.getOrNull<ActivityManager>()
         if (activityManager != null) {
-            val stageList = activityManager.getMergedStageList(filterByToday = false)
-
-            // customStageCode 手动输入时跳过此检查
+            // customStageCode 手动输入时跳过此检查仅 CURRENT 重置策略需要按候选列表成员过滤，
+            // 故 stageList 延迟到此分支内构建，避免备选/IGNORE 场景每次白白重建整份合并关卡列表
             if (!customStageCode && stageResetMode == StageResetMode.CURRENT) {
+                val stageList = activityManager.getMergedStageList(filterByToday = false)
                 candidates = candidates.filter { code ->
                     stageList.any { it.code == code }
                 }
             }
 
-            // 参考 WPF GetFightStage: 优先选今日开放的关卡
+            // 参考 WPF GetFightStage: 从上往下取第一个今日开放的关卡
+            // 用 isStageOpen（经 getStageInfo 兜底，对齐 WPF StageManager.IsStageOpen）判定，
+            // 而非「候选列表成员 + isOpenToday」；否则主线关卡（如 16-14，不在候选列表）会被误判未开放而跳过
+            val day = activityManager.getYjDayOfWeek()
             val openStage = candidates.firstOrNull { code ->
-                stageList.any { it.code == code && it.isOpenToday }
+                activityManager.isStageOpen(code, day)
             }
             if (openStage != null) return openStage
         }
