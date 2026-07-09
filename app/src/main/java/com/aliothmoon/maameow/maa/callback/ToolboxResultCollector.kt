@@ -8,6 +8,7 @@ import com.aliothmoon.maameow.data.model.toolbox.OperBoxOperator
 import com.aliothmoon.maameow.data.model.toolbox.OperBoxResult
 import com.aliothmoon.maameow.data.model.toolbox.RecruitCalcResult
 import com.aliothmoon.maameow.data.model.toolbox.RecruitOperator
+import com.aliothmoon.maameow.data.resource.ItemHelper
 import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ import kotlinx.coroutines.launch
 class ToolboxResultCollector(
     private val resourceDataManager: ResourceDataManager,
     private val achievementRepository: AchievementRepository,
+    private val itemHelper: ItemHelper,
 ) {
     private val achievementScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -82,10 +84,16 @@ class ToolboxResultCollector(
 
         val dataStr = details.getString("data") ?: return
         val dataObj = com.alibaba.fastjson2.JSON.parseObject(dataStr) ?: return
+        // 按游戏内置 sortId 排序，查不到的排最后并按 ID 兜底
+        val itemMap = itemHelper.items.value
         val items = dataObj.entries.mapNotNull { (id, value) ->
             val count = (value as? Number)?.toInt() ?: return@mapNotNull null
             if (count > 0) DepotItem(id, count) else null
-        }.sortedBy { it.id }
+        }.sortedWith(
+            compareBy(
+                { itemMap[it.id]?.sortId ?: Int.MAX_VALUE },
+                { it.id })
+        )
         _depotItems.value = items
         achievementScope.launch {
             achievementRepository.report {
