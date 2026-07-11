@@ -70,6 +70,10 @@ class GameMuteCoordinator(
 
     private suspend fun muteLocked(clientType: String?): Boolean {
         val pkg = clientType?.let { Packages[it] } ?: return false
+        if (currentMutedPackage() == pkg) {
+            Timber.d("Mute request ignored because %s is already marked muted", pkg)
+            return true
+        }
         appSettingsManager.setMutedGamePackage(pkg) // write-ahead：先持久化再动系统状态
         val ok = requestRemote(pkg, mute = true)
         if (!ok) {

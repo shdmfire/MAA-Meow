@@ -27,6 +27,13 @@ object GameAudioMuteController {
     }
 
     private fun mute(pkg: String): Boolean {
+        muted[pkg]?.let { existing ->
+            Ln.i(
+                "$TAG: $pkg already muted, preserving originalMode=${existing.originalMode}"
+            )
+            return true
+        }
+
         val uid = RemoteUtils.getAppUid(pkg)
         if (uid < 0) {
             Ln.w("$TAG: mute $pkg failed - cannot resolve uid")
