@@ -54,8 +54,14 @@ EXCLUDE_SO = {"libc++_shared.so", "libfastdeploy_ppocr.so"}
 IGNORE_EXTENSIONS = {".h"}
 
 # Target paths (relative to project root)
-ASSETS_RESOURCE_DIR = "app/src/main/assets/MaaSync/MaaResource"
-JNILIBS_DIR = "app/src/main/jniLibs"
+ASSETS_RESOURCE_DIR = "controller/maa-feature/src/main/assets/MaaSync/MaaResource"
+JNILIBS_DIR = "controller/maa-engine/src/main/jniLibs"
+
+# When cleaning jniLibs, only remove .so files whose names start with these prefixes.
+# This ensures libbridge.so (NFC/bridge) and liblauncher.so (root launcher) are never
+# touched or removed by setup_maa_core.
+MAA_SO_ALLOWLIST_PREFIXES = {"libMaaCore", "libMaaUtils", "libMaaAndroidNativeControlUnit",
+                               "libonnxruntime", "libopencv_world", "libjnidispatch"}
 CACHE_DIR = ".maa-cache"
 VERSION_FILE = ".maaversion"
 
@@ -170,11 +176,16 @@ def extract_and_deploy(tarball: Path, abi: str, project_root: Path):
     jnilib_dir = project_root / JNILIBS_DIR / abi
 
     if jnilib_dir.exists():
-        # Only delete MAA-related .so files, keep libjnidispatch.so etc.
+        # Only delete .so files matching the allowlist prefixes.
+        # Never touch libbridge.so, liblauncher.so, or other non-MAA .so files.
         for f in jnilib_dir.iterdir():
-            if f.suffix == ".so" and f.name != "libjnidispatch.so":
-                f.unlink()
-                print(f"    [DELETE] {abi}/{f.name}")
+            if f.suffix == ".so":
+                prefix_match = any(f.name.startswith(p) for p in MAA_SO_ALLOWLIST_PREFIXES)
+                if prefix_match:
+                    f.unlink()
+                    print(f"    [DELETE] {abi}/{f.name}")
+                else:
+                    print(f"    [SKIP]  {abi}/{f.name} (not in MAA allowlist)")
 
     jnilib_dir.mkdir(parents=True, exist_ok=True)
 

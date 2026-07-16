@@ -60,11 +60,6 @@ android {
         ndkVersion = "29.0.13113456"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // setup_maa_core.py deploy 时写入 .maaversion；缺失时为空串，运行时检查宽松放行
-        val maaCoreVersion = rootProject.file(".maaversion")
-            .takeIf { it.isFile }?.readText()?.trim().orEmpty()
-        buildConfigField("String", "MAA_CORE_VERSION", "\"$maaCoreVersion\"")
-
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
         }
@@ -197,6 +192,10 @@ dependencies {
     implementation(libs.koin.androidx.compose)
 
     // Third-party
+    implementation(project(":controller:maa-contract"))
+    implementation(project(":controller:maa-engine"))
+    implementation(project(":controller:maa-feature"))
+
     implementation(libs.jna) { artifact { type = "aar" } }
     implementation(libs.fastjson2)
     implementation(libs.shizuku.api)
@@ -231,9 +230,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
-
-// Apply asset manifest generation script
-apply(from = "asset-manifest.gradle.kts")
 
 // Apply i18n strings consistency gate (verifyI18nStrings hooked to preBuild)
 apply(from = "i18n-verify.gradle.kts")

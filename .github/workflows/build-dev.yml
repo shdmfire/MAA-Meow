@@ -77,7 +77,7 @@ jobs:
           python scripts/setup_maa_core.py --clean $TAG_ARG $REPO_ARG
 
       - name: Print MAA Resource version
-        run: cat app/src/main/assets/MaaSync/MaaResource/version.json
+        run: cat controller/maa-feature/src/main/assets/MaaSync/MaaResource/version.json
 
       - name: Run modularization gate
         run: |

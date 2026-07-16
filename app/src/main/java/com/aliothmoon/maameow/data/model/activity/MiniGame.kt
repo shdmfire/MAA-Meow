@@ -1,7 +1,7 @@
 package com.aliothmoon.maameow.data.model.activity
 
 import com.aliothmoon.maameow.R
-import com.aliothmoon.maameow.data.resource.MaaCoreVersion
+import com.aliothmoon.maameow.controller.maa.engine.MaaCoreVersion
 import com.aliothmoon.maameow.data.resource.MiniGameTextRegistry
 import com.aliothmoon.maameow.utils.i18n.UiText
 import com.aliothmoon.maameow.utils.i18n.uiTextOf

@@ -82,7 +82,7 @@ jobs:
           fi
 
       - name: Print MAA Resource version
-        run: cat app/src/main/assets/MaaSync/MaaResource/version.json
+        run: cat controller/maa-feature/src/main/assets/MaaSync/MaaResource/version.json
 
       - name: Override ABI filter
         if: matrix.abi != 'all'

@@ -3,7 +3,7 @@ package com.aliothmoon.maameow.maa.callback
 import com.aliothmoon.maameow.domain.service.MaaNotificationCenter
 import com.aliothmoon.maameow.domain.service.MaaSessionLogger
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
-import com.aliothmoon.maameow.maa.AsstMsg
+import com.aliothmoon.maameow.controller.maa.engine.core.AsstMsg
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Test

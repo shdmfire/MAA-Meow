@@ -6,7 +6,7 @@ import com.aliothmoon.maameow.data.model.LogLevel
 import com.aliothmoon.maameow.domain.service.MaaNotificationCenter
 import com.aliothmoon.maameow.domain.service.MaaSessionLogger
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
-import com.aliothmoon.maameow.maa.AsstMsg
+import com.aliothmoon.maameow.controller.maa.engine.core.AsstMsg
 import timber.log.Timber
 
 class MaaCallbackDispatcher(

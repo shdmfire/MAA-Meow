@@ -34,4 +34,7 @@ include(":automation:runtime-remote")
 include(":hidden-api")
 include(":annotation-api")
 include(":ksp-processor")
+include(":controller:maa-contract")
+include(":controller:maa-engine")
+include(":controller:maa-feature")
  

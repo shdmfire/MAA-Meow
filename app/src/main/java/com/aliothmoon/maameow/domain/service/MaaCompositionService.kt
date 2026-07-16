@@ -3,8 +3,8 @@ package com.aliothmoon.maameow.domain.service
 import android.content.Context
 import com.alibaba.fastjson2.JSON
 import com.aliothmoon.maameow.R
-import com.aliothmoon.maameow.MaaCoreCallback
-import com.aliothmoon.maameow.MaaCoreService
+import com.aliothmoon.maameow.controller.maa.engine.MaaCoreCallback
+import com.aliothmoon.maameow.controller.maa.engine.MaaCoreService
 import com.aliothmoon.maameow.RemoteService
 import com.aliothmoon.maameow.constant.DefaultDisplayConfig
 import com.aliothmoon.maameow.data.model.LogLevel
@@ -15,10 +15,10 @@ import com.aliothmoon.maameow.data.resource.ActivityManager
 import com.aliothmoon.maameow.domain.models.RemoteBackend
 import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.state.MaaExecutionState
-import com.aliothmoon.maameow.maa.AsstMsg
-import com.aliothmoon.maameow.maa.MaaInstanceOptions.ANDROID
-import com.aliothmoon.maameow.maa.MaaInstanceOptions.DEPLOYMENT_WITH_PAUSE
-import com.aliothmoon.maameow.maa.MaaInstanceOptions.TOUCH_MODE
+import com.aliothmoon.maameow.controller.maa.engine.core.AsstMsg
+import com.aliothmoon.maameow.controller.maa.engine.core.MaaInstanceOptions.ANDROID
+import com.aliothmoon.maameow.controller.maa.engine.core.MaaInstanceOptions.DEPLOYMENT_WITH_PAUSE
+import com.aliothmoon.maameow.controller.maa.engine.core.MaaInstanceOptions.TOUCH_MODE
 import com.aliothmoon.maameow.maa.callback.MaaCallbackDispatcher
 import com.aliothmoon.maameow.maa.callback.MaaExecutionStateHolder
 import com.aliothmoon.maameow.maa.callback.SubTaskHandler
@@ -176,7 +176,7 @@ class MaaCompositionService(
     }
 
     val callback = object : MaaCoreCallback.Stub() {
-        override fun onCallback(msg: Int, json: String?) = handleCallback(msg, json)
+        override fun onCallback(msg: Int, json: String) = handleCallback(msg, json)
     }
 
     private fun onAsyncConnectCallback(msg: Int, json: String?): Boolean {

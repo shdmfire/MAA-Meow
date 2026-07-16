@@ -8,7 +8,7 @@ import com.aliothmoon.maameow.BuildConfig
 import com.aliothmoon.maameow.RemoteService
 import com.aliothmoon.maameow.constant.MaaFiles
 import com.aliothmoon.maameow.domain.models.RemoteBackend
-import com.aliothmoon.maameow.remote.legacy.LegacyRemoteServiceImpl
+import com.aliothmoon.maameow.remote.RemoteServiceImpl
 import com.aliothmoon.maameow.automation.remote.root.RootServiceBootstrapRegistry
 import com.aliothmoon.maameow.automation.remote.root.RootServiceStarter
 import com.topjohnwu.superuser.Shell
@@ -150,7 +150,7 @@ object RootRemoteServiceConnector : RemoteServiceConnectorBackend {
             append(" --package=")
             append(shellQuote(appContext.packageName))
             append(" --class=")
-            append(shellQuote(LegacyRemoteServiceImpl::class.java.name))
+            append(shellQuote(RemoteServiceImpl::class.java.name))
             append(" --uid=")
             append(uid)
             // 扩充到 Android 14

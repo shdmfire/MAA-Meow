@@ -10,6 +10,7 @@ import com.aliothmoon.maameow.data.model.activity.StageActivityInfo
 import com.aliothmoon.maameow.data.model.activity.StageActivityRoot
 import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.utils.i18n.resolve
+import com.aliothmoon.maameow.controller.maa.engine.MaaCoreVersion
 import com.aliothmoon.maameow.utils.i18n.uiTextOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

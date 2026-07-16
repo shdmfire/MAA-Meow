@@ -1,7 +1,7 @@
 package com.aliothmoon.maameow.domain.service
 
 import android.os.Process
-import com.aliothmoon.maameow.MaaCoreService
+import com.aliothmoon.maameow.controller.maa.engine.MaaCoreService
 import com.aliothmoon.maameow.data.config.MaaPathConfig
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.data.preferences.TaskChainState
