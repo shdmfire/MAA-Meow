@@ -93,6 +93,11 @@ jobs:
           android.defaultConfig.ndk.abiFilters += "${{ matrix.abi }}"
           EOF
 
+      - name: Run modularization gate
+        run: |
+          chmod +x ./gradlew
+          ./gradlew modularizationFastCheck
+
       - name: Decode keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -105,9 +110,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean assembleRelease
+        run: ./gradlew clean assembleRelease
 
       - name: Rename APK
         run: |

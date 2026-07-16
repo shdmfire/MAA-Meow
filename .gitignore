@@ -45,3 +45,5 @@ __pycache__/
 /app/release
 /app/debug
 /gradle/gradle-daemon-jvm.properties
+
+/reference

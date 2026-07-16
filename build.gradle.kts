@@ -11,3 +11,27 @@ plugins {
     alias(libs.plugins.kotlin.parcelize) apply false
     alias(libs.plugins.ksp) apply false
 }
+
+val isWindows = System.getProperty("os.name").lowercase().contains("win")
+val pythonCmd = if (isWindows) "python" else "python3"
+
+val checkServiceLoaderEntries by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Validate service-loader providers and controller IDs"
+    commandLine(pythonCmd, "scripts/check_service_loader_entries.py")
+}
+
+val checkModuleBoundaries by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Check staged module dependencies and source imports"
+    dependsOn(checkServiceLoaderEntries)
+    commandLine(pythonCmd, "scripts/check_module_boundaries.py", "--phase", "0")
+}
+
+tasks.register("modularizationFastCheck") {
+    group = "verification"
+    description = "Run Phase 0 modularization boundaries and JVM regression tests"
+    dependsOn(checkModuleBoundaries)
+    dependsOn(":app:testDebugUnitTest")
+    dependsOn(":app:verifyI18nStrings")
+}

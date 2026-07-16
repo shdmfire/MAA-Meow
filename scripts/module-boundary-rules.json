@@ -1,0 +1,63 @@
+{
+  "projectDependencyRules": [
+    {
+      "from": ":automation:*",
+      "forbid": ":controller:*",
+      "enabledFromPhase": 0,
+      "description": "automation modules must not depend on controller modules",
+      "suggestion": "depend on a controller-neutral contract module; controller implementations may depend inward on that contract"
+    },
+    {
+      "from": ":feature:control-shell",
+      "forbid": ":controller:*",
+      "enabledFromPhase": 0,
+      "description": "the control shell must not depend on controller implementations",
+      "suggestion": "resolve controllers through the plugin/registry contract instead of a project dependency"
+    }
+  ],
+  "importRules": [
+    {
+      "sourceRoot": "app/src/main",
+      "forbiddenPrefixes": [
+        "controller.maa",
+        "com.aliothmoon.maameow.controller.maa",
+        "com.aliothmoon.maameow.maa"
+      ],
+      "enabledFromPhase": 0,
+      "description": "app/src/main must not gain new MAA/controller implementation imports (Phase 0 ratchet)",
+      "suggestion": "move the dependency behind a controller-neutral API; Phase 6 removes this baseline",
+      "baselineFiles": [
+        "app/src/main/java/com/aliothmoon/maameow/data/model/AwardConfig.kt",
+        "app/src/main/java/com/aliothmoon/maameow/data/model/FightConfig.kt",
+        "app/src/main/java/com/aliothmoon/maameow/data/model/InfrastConfig.kt",
+        "app/src/main/java/com/aliothmoon/maameow/data/model/MallConfig.kt",
+        "app/src/main/java/com/aliothmoon/maameow/data/model/ReclamationConfig.kt",
+        "app/src/main/java/com/aliothmoon/maameow/data/model/RecruitConfig.kt",
+        "app/src/main/java/com/aliothmoon/maameow/data/model/RoguelikeConfig.kt",
+        "app/src/main/java/com/aliothmoon/maameow/data/model/TaskParamProvider.kt",
+        "app/src/main/java/com/aliothmoon/maameow/data/model/WakeUpConfig.kt",
+        "app/src/main/java/com/aliothmoon/maameow/domain/service/CopilotManager.kt",
+        "app/src/main/java/com/aliothmoon/maameow/domain/service/MaaCompositionService.kt",
+        "app/src/main/java/com/aliothmoon/maameow/domain/service/TaskExecutionService.kt",
+        "app/src/main/java/com/aliothmoon/maameow/domain/usecase/AnalyzeTaskChainUseCase.kt",
+        "app/src/main/java/com/aliothmoon/maameow/koin/AppModule.kt",
+        "app/src/main/java/com/aliothmoon/maameow/maa/callback/MaaCallbackDispatcher.kt",
+        "app/src/main/java/com/aliothmoon/maameow/maa/callback/SubTaskHandler.kt",
+        "app/src/main/java/com/aliothmoon/maameow/maa/callback/TaskChainHandler.kt",
+        "app/src/main/java/com/aliothmoon/maameow/presentation/viewmodel/CopilotViewModel.kt",
+        "app/src/main/java/com/aliothmoon/maameow/presentation/viewmodel/MiniGameDelegate.kt",
+        "app/src/main/java/com/aliothmoon/maameow/presentation/viewmodel/ToolboxViewModel.kt",
+        "app/src/main/java/com/aliothmoon/maameow/remote/MaaCoreManager.kt",
+        "app/src/main/java/com/aliothmoon/maameow/remote/MaaCoreServiceImpl.kt",
+        "app/src/main/java/com/aliothmoon/maameow/remote/RemoteServiceImpl.kt"
+      ]
+    },
+    {
+      "sourceRoot": "app/src/hostOnly",
+      "forbiddenPrefixes": ["controller.maa", "com.aliothmoon.maameow.controller.maa"],
+      "enabledFromPhase": 0,
+      "description": "hostOnly sources must not import the MAA controller implementation",
+      "suggestion": "use the controller-neutral host API"
+    }
+  ]
+}

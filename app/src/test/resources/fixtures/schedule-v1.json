@@ -1,0 +1,16 @@
+[
+  {
+    "id": "schedule-v1-fixed",
+    "name": "Legacy morning run",
+    "enabled": true,
+    "scheduleType": "FIXED_TIME",
+    "daysOfWeek": [1, 3, 5],
+    "executionTimes": ["08:30", "20:05"],
+    "profileId": "profile-v1",
+    "forceStart": true,
+    "createdAt": 1704067200000,
+    "lastExecutedAt": 1704153600000,
+    "lastResult": "STARTED",
+    "lastResultMessage": "legacy fixture"
+  }
+]
