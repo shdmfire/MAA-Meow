@@ -3,30 +3,20 @@ plugins {
 }
 
 android {
-    namespace = "com.aliothmoon.maameow.automation.remote"
+    namespace = "com.aliothmoon.maameow.automation.app"
     compileSdk = 37
-
     defaultConfig { minSdk = 28 }
     buildFeatures { buildConfig = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    testOptions {
-        unitTests {
-            isReturnDefaultValues = true
-        }
-    }
 }
 
 dependencies {
-    implementation(project(":automation:api"))
     implementation(project(":automation:android-ipc"))
-    compileOnly(project(":hidden-api"))
-    compileOnly(libs.androidx.annotation)
     implementation(libs.shizuku.api)
     implementation(libs.timber)
-    implementation(libs.kotlinx.coroutines.core)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
 }

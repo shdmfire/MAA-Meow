@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.os.Process
 import android.view.Surface
 import com.aliothmoon.maameow.automation.ipc.IRemoteAutomationService
+import com.aliothmoon.maameow.automation.ipc.IRemoteAutomationCallback
 import com.aliothmoon.maameow.automation.ipc.ITouchEventCallback
 import com.aliothmoon.maameow.automation.ipc.PermissionGrantRequest
 import com.aliothmoon.maameow.automation.ipc.PermissionStateInfo
@@ -25,6 +26,7 @@ import com.aliothmoon.maameow.automation.remote.internal.VirtualDisplayManager
 import com.aliothmoon.maameow.automation.remote.third.FakeContext
 import com.aliothmoon.maameow.automation.remote.third.Ln
 import com.aliothmoon.maameow.automation.remote.third.Workarounds
+import com.aliothmoon.maameow.automation.remote.session.RemoteSessionCoordinator
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -66,6 +68,7 @@ class RemoteAutomationServiceImpl : IRemoteAutomationService.Stub() {
     private val virtualDisplayMode = AtomicInteger(DISPLAY_MODE_PRIMARY)
     private val appPid = AtomicInteger(0)
     private val destroyed = AtomicBoolean(false)
+    private val sessionCoordinator = RemoteSessionCoordinator()
 
     init {
         Workarounds.apply()
@@ -78,6 +81,7 @@ class RemoteAutomationServiceImpl : IRemoteAutomationService.Stub() {
             return
         }
         Ln.i("$TAG: destroy()")
+        runCatching { sessionCoordinator.cleanupAll() }
         InputControlUtils.setTouchCallback(null)
         performEmergencyCleanup()
         exitProcess(0)
@@ -90,6 +94,11 @@ class RemoteAutomationServiceImpl : IRemoteAutomationService.Stub() {
 
 
     override fun captureFramePng(dirPath: String?): String? {
+        if (rejectLegacyDisplayOperation("captureFramePng")) return null
+        return doCaptureFramePng(dirPath)
+    }
+
+    private fun doCaptureFramePng(dirPath: String?): String? {
         if (dirPath.isNullOrBlank()) {
             Ln.w("$TAG: captureFramePng - blank dirPath")
             return null
@@ -163,6 +172,7 @@ class RemoteAutomationServiceImpl : IRemoteAutomationService.Stub() {
     }
 
     override fun setMonitorSurface(surface: Surface?) {
+        if (rejectLegacyDisplayOperation("setMonitorSurface")) return
         Ln.i("$TAG: setMonitorSurface(${surface != null})")
         VirtualDisplayManager.setMonitorSurface(surface)
         NativeBridgeLib.setPreviewSurface(surface)
@@ -174,6 +184,7 @@ class RemoteAutomationServiceImpl : IRemoteAutomationService.Stub() {
     }
 
     override fun touchDown(x: Int, y: Int) {
+        if (rejectLegacyDisplayOperation("touchDown")) return
         if (virtualDisplayMode.get() == DISPLAY_MODE_PRIMARY) return
         val displayId = VirtualDisplayManager.getDisplayId()
         if (displayId != RemoteDisplayDefaults.DISPLAY_NONE) {
@@ -182,6 +193,7 @@ class RemoteAutomationServiceImpl : IRemoteAutomationService.Stub() {
     }
 
     override fun touchMove(x: Int, y: Int) {
+        if (rejectLegacyDisplayOperation("touchMove")) return
         if (virtualDisplayMode.get() == DISPLAY_MODE_PRIMARY) return
         val displayId = VirtualDisplayManager.getDisplayId()
         if (displayId != RemoteDisplayDefaults.DISPLAY_NONE) {
@@ -190,11 +202,18 @@ class RemoteAutomationServiceImpl : IRemoteAutomationService.Stub() {
     }
 
     override fun touchUp(x: Int, y: Int) {
+        if (rejectLegacyDisplayOperation("touchUp")) return
         if (virtualDisplayMode.get() == DISPLAY_MODE_PRIMARY) return
         val displayId = VirtualDisplayManager.getDisplayId()
         if (displayId != RemoteDisplayDefaults.DISPLAY_NONE) {
             InputControlUtils.up(x, y, displayId)
         }
+    }
+
+    private fun rejectLegacyDisplayOperation(operation: String): Boolean {
+        if (!sessionCoordinator.hasActiveSession()) return false
+        Ln.w("$TAG: reject legacy $operation while session is active")
+        return true
     }
 
     override fun setDisplayPower(on: Boolean) {
@@ -290,18 +309,24 @@ class RemoteAutomationServiceImpl : IRemoteAutomationService.Stub() {
 
     override fun setVirtualDisplayResolution(width: Int, height: Int, dpi: Int) {
         Ln.i("$TAG: setVirtualDisplayResolution(${width}x${height}, dpi=$dpi)")
+        if (!sessionCoordinator.setResolution(width, height, dpi)) {
+            Ln.w("$TAG: reject resolution change while session is running")
+            return
+        }
         VirtualDisplayManager.setResolution(width, height, dpi)
     }
 
     override fun setVirtualDisplayMode(mode: Int): Boolean {
         when (mode) {
             DISPLAY_MODE_PRIMARY -> {
+                if (!sessionCoordinator.setDisplayMode(mode)) return false
                 VirtualDisplayManager.stop()
                 virtualDisplayMode.set(mode)
                 return true
             }
 
             DISPLAY_MODE_BACKGROUND -> {
+                if (!sessionCoordinator.setDisplayMode(mode)) return false
                 PrimaryDisplayManager.stop()
                 virtualDisplayMode.set(mode)
                 return true
@@ -334,16 +359,36 @@ class RemoteAutomationServiceImpl : IRemoteAutomationService.Stub() {
         }.start()
     }
 
-    override fun startSession(request: RemoteSessionRequest) =
-        RemoteSessionInfo(
-            state = "ERROR", errorCode = "ENGINE_COORDINATOR_NOT_ENABLED",
-            message = "Remote engine coordinator is introduced in Phase 3",
-        )
+    override fun installedControllerIds(): Array<String> = sessionCoordinator.installedControllerIds().toTypedArray()
 
-    override fun stopSession(sessionId: String) =
-        RemoteSessionInfo(
-            sessionId = sessionId, state = "ERROR", errorCode = "ENGINE_COORDINATOR_NOT_ENABLED",
-            message = "Remote engine coordinator is introduced in Phase 3",
-        )
+    override fun getActiveSession(): RemoteSessionInfo = sessionCoordinator.getActiveSession()
+
+    override fun startSession(request: RemoteSessionRequest): RemoteSessionInfo =
+        sessionCoordinator.startSession(request, null)
+
+    override fun startSessionWithCallback(
+        request: RemoteSessionRequest,
+        callback: IRemoteAutomationCallback?
+    ): RemoteSessionInfo = sessionCoordinator.startSession(request, callback)
+
+    override fun stopSession(sessionId: String): RemoteSessionInfo = sessionCoordinator.stopSession(sessionId)
+
+    override fun setMonitorSurfaceForSession(sessionId: String, surface: Surface?): Boolean =
+        sessionCoordinator.setMonitorSurface(sessionId, surface)
+
+    override fun clearMonitorSurface(sessionId: String): Boolean =
+        sessionCoordinator.clearMonitorSurface(sessionId)
+
+    override fun touchDownForSession(sessionId: String, x: Int, y: Int): Boolean =
+        sessionCoordinator.touchDown(sessionId, x, y)
+
+    override fun touchMoveForSession(sessionId: String, x: Int, y: Int): Boolean =
+        sessionCoordinator.touchMove(sessionId, x, y)
+
+    override fun touchUpForSession(sessionId: String, x: Int, y: Int): Boolean =
+        sessionCoordinator.touchUp(sessionId, x, y)
+
+    override fun captureFramePngForSession(sessionId: String, dirPath: String?): String? =
+        if (sessionCoordinator.validate(sessionId) != null) doCaptureFramePng(dirPath) else null
 
 }

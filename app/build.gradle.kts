@@ -169,6 +169,7 @@ dependencies {
     implementation(project(":annotation-api"))
     implementation(project(":automation:api"))
     implementation(project(":automation:android-ipc"))
+    implementation(project(":automation:runtime-app"))
     implementation(project(":automation:runtime-remote"))
     ksp(project(":ksp-processor"))
 

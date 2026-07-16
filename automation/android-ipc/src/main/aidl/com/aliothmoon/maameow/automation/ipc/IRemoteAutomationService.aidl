@@ -3,6 +3,7 @@ package com.aliothmoon.maameow.automation.ipc;
 import android.content.Intent;
 import android.view.Surface;
 import com.aliothmoon.maameow.automation.ipc.ITouchEventCallback;
+import com.aliothmoon.maameow.automation.ipc.IRemoteAutomationCallback;
 import com.aliothmoon.maameow.automation.ipc.PermissionGrantRequest;
 import com.aliothmoon.maameow.automation.ipc.PermissionStateInfo;
 import com.aliothmoon.maameow.automation.ipc.RemoteSessionRequest;
@@ -35,4 +36,14 @@ interface IRemoteAutomationService {
     String captureFramePng(String dirPath) = 23;
     RemoteSessionInfo startSession(in RemoteSessionRequest request) = 24;
     RemoteSessionInfo stopSession(String sessionId) = 25;
+
+    String[] installedControllerIds() = 26;
+    RemoteSessionInfo startSessionWithCallback(in RemoteSessionRequest request, IRemoteAutomationCallback callback) = 27;
+    RemoteSessionInfo getActiveSession() = 28;
+    boolean setMonitorSurfaceForSession(String sessionId, in Surface surface) = 29;
+    boolean clearMonitorSurface(String sessionId) = 30;
+    boolean touchDownForSession(String sessionId, int x, int y) = 31;
+    boolean touchMoveForSession(String sessionId, int x, int y) = 32;
+    boolean touchUpForSession(String sessionId, int x, int y) = 33;
+    String captureFramePngForSession(String sessionId, String dirPath) = 34;
 }

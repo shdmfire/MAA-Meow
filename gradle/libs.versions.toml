@@ -1,8 +1,10 @@
 [versions]
 # Build Tools
 agp = "9.2.1"
+annotation = "1.10.0"
 bom = "0.23.6"
 kotlin = "2.3.21"
+kotlinxCoroutinesCore = "1.11.0"
 ksp = "2.3.9"
 
 # AndroidX Core
@@ -58,11 +60,13 @@ espressoCore = "3.7.0"
 
 
 [libraries]
+androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 bom = { module = "io.github.Rosemoe.sora-editor:bom", version.ref = "bom" }
 editor = { module = "io.github.Rosemoe.sora-editor:editor" }
 editor-language-textmate = { module = "io.github.Rosemoe.sora-editor:language-textmate" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
