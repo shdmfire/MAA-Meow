@@ -17,7 +17,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.aliothmoon.maameow.MainActivity
 import com.aliothmoon.maameow.R
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.automation.api.ExecutionState
+import com.aliothmoon.maameow.automation.legacy.LegacyAutomationSessionFacade
 import com.aliothmoon.maameow.maa.callback.TaskChainStatusTracker
 import com.aliothmoon.maameow.maa.callback.TaskRunInfo
 import com.aliothmoon.maameow.maa.callback.TaskRunStatus
@@ -73,7 +74,7 @@ class TaskExecutionService : Service() {
         }
     }
 
-    private val compositionService: MaaCompositionService by inject()
+    private val automationSession: LegacyAutomationSessionFacade by inject()
     private val sessionLogger: MaaSessionLogger by inject()
     private val taskChainStatusTracker: TaskChainStatusTracker by inject()
 
@@ -85,7 +86,7 @@ class TaskExecutionService : Service() {
         super.onCreate()
         ensureNotificationChannel()
         val initial = TaskNotificationSnapshot(
-            state = compositionService.state.value,
+            state = automationSession.state.value,
             statusText = sessionLogger.logs.value.lastOrNull()?.content,
             tasks = taskChainStatusTracker.tasks.value,
         )
@@ -142,7 +143,7 @@ class TaskExecutionService : Service() {
 
             // 三个数据源合并为单一 Snapshot 流，distinctUntilChanged 避免无意义刷新。
             combine(
-                compositionService.state,
+                automationSession.state,
                 taskChainStatusTracker.tasks,
                 sessionLogger.logs
                     .map { it.lastOrNull()?.content }
@@ -153,25 +154,26 @@ class TaskExecutionService : Service() {
                 .distinctUntilChanged()
                 .collect { snapshot ->
                     when (snapshot.state) {
-                        MaaExecutionState.IDLE,
-                        MaaExecutionState.ERROR -> {
+                        ExecutionState.IDLE,
+                        ExecutionState.ERROR -> {
                             resetSchedule()
                             handleTerminalState(snapshot)
                         }
 
-                        MaaExecutionState.STARTING -> forceUpdate(
+                        ExecutionState.PREPARING,
+                        ExecutionState.STARTING -> forceUpdate(
                             snapshot.copy(
                                 statusText = getString(R.string.notification_task_starting)
                             )
                         )
 
-                        MaaExecutionState.STOPPING -> forceUpdate(
+                        ExecutionState.STOPPING -> forceUpdate(
                             snapshot.copy(
                                 statusText = getString(R.string.notification_task_stopping)
                             )
                         )
 
-                        MaaExecutionState.RUNNING -> throttledUpdate(
+                        ExecutionState.RUNNING -> throttledUpdate(
                             snapshot.copy(
                                 statusText = snapshot.statusText
                                     ?: getString(R.string.notification_task_running)
@@ -240,12 +242,13 @@ class TaskExecutionService : Service() {
         )
     }
 
-    private fun defaultStatusText(state: MaaExecutionState): String = when (state) {
-        MaaExecutionState.STARTING -> getString(R.string.notification_task_starting)
-        MaaExecutionState.STOPPING -> getString(R.string.notification_task_stopping)
-        MaaExecutionState.RUNNING -> getString(R.string.notification_task_running)
-        MaaExecutionState.IDLE -> getString(R.string.notification_task_completed)
-        MaaExecutionState.ERROR -> getString(R.string.notification_task_error)
+    private fun defaultStatusText(state: ExecutionState): String = when (state) {
+        ExecutionState.PREPARING,
+        ExecutionState.STARTING -> getString(R.string.notification_task_starting)
+        ExecutionState.STOPPING -> getString(R.string.notification_task_stopping)
+        ExecutionState.RUNNING -> getString(R.string.notification_task_running)
+        ExecutionState.IDLE -> getString(R.string.notification_task_completed)
+        ExecutionState.ERROR -> getString(R.string.notification_task_error)
     }
 
     private fun buildCompatProgressNotification(
@@ -330,9 +333,9 @@ class TaskExecutionService : Service() {
 
         val progress = when {
             taskErrorIndex != null -> progressFor(taskErrorIndex + 1)
-            snapshot.state == MaaExecutionState.ERROR -> progressFor(completedCount)
-            snapshot.state == MaaExecutionState.IDLE -> PROGRESS_STYLE_MAX
-            snapshot.state == MaaExecutionState.STOPPING -> {
+            snapshot.state == ExecutionState.ERROR -> progressFor(completedCount)
+            snapshot.state == ExecutionState.IDLE -> PROGRESS_STYLE_MAX
+            snapshot.state == ExecutionState.STOPPING -> {
                 val idx = completedCount.coerceAtLeast(activeIndex ?: completedCount)
                     .coerceIn(0, total)
                 progressFor(idx)
@@ -347,10 +350,10 @@ class TaskExecutionService : Service() {
         }.coerceIn(0, PROGRESS_STYLE_MAX)
 
         val barColor = when {
-            taskErrorIndex != null || snapshot.state == MaaExecutionState.ERROR ->
+            taskErrorIndex != null || snapshot.state == ExecutionState.ERROR ->
                 PROGRESS_COLOR_ERROR
 
-            snapshot.state == MaaExecutionState.IDLE -> PROGRESS_COLOR_COMPLETED
+            snapshot.state == ExecutionState.IDLE -> PROGRESS_COLOR_COMPLETED
             else -> PROGRESS_COLOR_ACTIVE
         }
 
@@ -424,7 +427,7 @@ class TaskExecutionService : Service() {
     }
 
     private data class TaskNotificationSnapshot(
-        val state: MaaExecutionState,
+        val state: ExecutionState,
         val statusText: String?,
         val tasks: List<TaskRunInfo>,
     )

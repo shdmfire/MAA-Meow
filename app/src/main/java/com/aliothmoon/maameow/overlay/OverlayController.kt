@@ -19,7 +19,8 @@ import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.OverlayControlMode
 import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.automation.api.ExecutionState
+import com.aliothmoon.maameow.automation.legacy.LegacyAutomationSessionFacade
 import com.aliothmoon.maameow.overlay.border.BorderOverlayManager
 import com.aliothmoon.maameow.presentation.LocalFloatingWindowContext
 import com.aliothmoon.maameow.presentation.view.panel.ExpandedControlPanel
@@ -51,6 +52,7 @@ class OverlayController(
     val borderOverlayManager: BorderOverlayManager,
     private val fwViewModelOwner: OverlayViewModelOwner,
     private val compositionService: MaaCompositionService,
+    private val automationSession: LegacyAutomationSessionFacade,
     private val appSettings: AppSettingsManager
 ) {
 
@@ -67,8 +69,8 @@ class OverlayController(
     private var orientation = context.resources.configuration.orientation
 
 
-    private val _signal = MutableSharedFlow<MaaExecutionState>(extraBufferCapacity = 1)
-    val signal: SharedFlow<MaaExecutionState> = _signal.asSharedFlow()
+    private val _signal = MutableSharedFlow<ExecutionState>(extraBufferCapacity = 1)
+    val signal: SharedFlow<ExecutionState> = _signal.asSharedFlow()
 
     private var currentMode: OverlayControlMode = OverlayControlMode.ACCESSIBILITY
     private var maaStateJob: Job? = null
@@ -139,8 +141,8 @@ class OverlayController(
     private fun startMaaStateObserver() {
         if (maaStateJob != null) return
         maaStateJob = scope.launch {
-            var previous = compositionService.state.value
-            compositionService.state.collect { state ->
+            var previous = automationSession.state.value
+            automationSession.state.collect { state ->
                 Timber.d("OverlayController: MaaCompositionService state changed: $state")
                 onMaaStateChanged(previous, state)
                 previous = state
@@ -153,16 +155,16 @@ class OverlayController(
         maaStateJob = null
     }
 
-    private suspend fun onMaaStateChanged(previous: MaaExecutionState, current: MaaExecutionState) {
+    private suspend fun onMaaStateChanged(previous: ExecutionState, current: ExecutionState) {
         if (!_isActive.value) return
 
         val wasActive =
-            previous == MaaExecutionState.RUNNING || previous == MaaExecutionState.STARTING || previous == MaaExecutionState.STOPPING
-        val isActive = current == MaaExecutionState.RUNNING || current == MaaExecutionState.STARTING || current == MaaExecutionState.STOPPING
+            previous == ExecutionState.RUNNING || previous == ExecutionState.STARTING || previous == ExecutionState.STOPPING
+        val isActive = current == ExecutionState.RUNNING || current == ExecutionState.STARTING || current == ExecutionState.STOPPING
 
         when {
             // 进入运行态：隐藏主面板，显示悬浮控件
-            current == MaaExecutionState.RUNNING && previous != MaaExecutionState.RUNNING -> {
+            current == ExecutionState.RUNNING && previous != ExecutionState.RUNNING -> {
                 hideMainPanel()
                 when (currentMode) {
                     OverlayControlMode.FLOAT_BALL -> {
@@ -328,7 +330,7 @@ class OverlayController(
                         }
                         setContent {
                             // 悬浮窗需要在后台强行保持监听，不使用 collectAsStateWithLifecycle
-                            val runningState by compositionService.state.collectAsState()
+                            val runningState by automationSession.state.collectAsState()
                             val countdown by countdownState.collectAsState()
                             FloatBall(
                                 onClick = {
@@ -364,9 +366,9 @@ class OverlayController(
             return
         }
         hideFloatBall()
-        if (compositionService.state.value == MaaExecutionState.RUNNING) {
+        if (automationSession.state.value == ExecutionState.RUNNING) {
             scope.launch {
-                compositionService.stop()
+                automationSession.stop()
             }
         }
         showMainPanel()
@@ -462,7 +464,7 @@ class OverlayController(
         when (mode) {
             OverlayControlMode.ACCESSIBILITY -> {
                 registerVolumeKeyListener()
-                if (compositionService.state.value == MaaExecutionState.RUNNING) {
+                if (automationSession.state.value == ExecutionState.RUNNING) {
                     borderOverlayManager.show()
                 }
             }
@@ -495,8 +497,8 @@ class OverlayController(
         AccessibilityHelperService.onVolumeUpDownPressed.set {
             scope.launch {
                 toggleMainPanel()
-                if (compositionService.state.value == MaaExecutionState.RUNNING) {
-                    compositionService.stop()
+                if (automationSession.state.value == ExecutionState.RUNNING) {
+                    automationSession.stop()
                 }
             }
         }

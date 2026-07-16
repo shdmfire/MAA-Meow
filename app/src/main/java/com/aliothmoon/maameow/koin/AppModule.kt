@@ -58,6 +58,8 @@ import com.aliothmoon.maameow.domain.service.update.checker.ResourceVersionCheck
 import com.aliothmoon.maameow.maa.callback.ConnectionInfoHandler
 import com.aliothmoon.maameow.maa.callback.CopilotRuntimeStateStore
 import com.aliothmoon.maameow.maa.callback.MaaCallbackDispatcher
+import com.aliothmoon.maameow.automation.legacy.LegacyAutomationSessionFacade
+import com.aliothmoon.maameow.automation.legacy.LegacyMaaExecutionStateAdapter
 import com.aliothmoon.maameow.maa.callback.MaaExecutionStateHolder
 import com.aliothmoon.maameow.maa.callback.SubTaskHandler
 import com.aliothmoon.maameow.maa.callback.TaskChainHandler
@@ -156,6 +158,8 @@ val appModule = module {
     single<AppAliveChecker> { RemoteAppAliveChecker() }
     singleOf(::AppWatchdog)
     singleOf(::MaaCompositionService)
+    singleOf(::LegacyMaaExecutionStateAdapter)
+    singleOf(::LegacyAutomationSessionFacade)
     single<MaaExecutionStateHolder> { get<MaaCompositionService>() }
     singleOf(::GameMuteCoordinator)
     singleOf(::MaaCallbackDispatcher)

@@ -2,7 +2,7 @@ package com.aliothmoon.maameow.domain.service
 
 import com.aliothmoon.maameow.constant.Packages
 import com.aliothmoon.maameow.data.preferences.TaskChainState
-import com.aliothmoon.maameow.remote.AppAliveStatus
+import com.aliothmoon.maameow.automation.remote.AppAliveStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

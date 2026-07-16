@@ -144,7 +144,7 @@
             android:multiprocess="false" />
 
         <provider
-            android:name=".root.RootServiceBootstrapProvider"
+            android:name="com.aliothmoon.maameow.automation.remote.root.RootServiceBootstrapProvider"
             android:authorities="${applicationId}.root.bootstrap"
             android:enabled="true"
             android:exported="true"

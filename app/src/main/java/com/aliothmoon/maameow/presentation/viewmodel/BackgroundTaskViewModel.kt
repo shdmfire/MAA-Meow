@@ -16,7 +16,8 @@ import com.aliothmoon.maameow.domain.service.GameMuteCoordinator
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.service.MaaSessionLogger
 import com.aliothmoon.maameow.domain.service.AchievementReporter
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.automation.api.ExecutionState
+import com.aliothmoon.maameow.automation.legacy.LegacyAutomationSessionFacade
 import com.aliothmoon.maameow.domain.usecase.PrepareTaskStartUseCase
 import com.aliothmoon.maameow.domain.usecase.TaskStartContext
 import com.aliothmoon.maameow.domain.usecase.TaskStartDecision
@@ -55,6 +56,7 @@ class BackgroundTaskViewModel(
     val chainState: TaskChainState,
     private val prepareTaskStart: PrepareTaskStartUseCase,
     private val compositionService: MaaCompositionService,
+    private val automationSession: LegacyAutomationSessionFacade,
     private val sessionLogger: MaaSessionLogger,
     private val appSettingsManager: AppSettingsManager,
     private val pathConfig: MaaPathConfig,
@@ -69,6 +71,7 @@ class BackgroundTaskViewModel(
         scope = viewModelScope,
         scheduleRepository = scheduleRepository,
         compositionService = compositionService,
+        automationSession = automationSession,
         appSettingsManager = appSettingsManager,
         chainState = chainState,
         triggerLogger = triggerLogger,
@@ -144,13 +147,13 @@ class BackgroundTaskViewModel(
 
     private fun observeTaskEnd() {
         viewModelScope.launch {
-            var prev = compositionService.state.value
-            compositionService.state.collect { current ->
+            var prev = automationSession.state.value
+            automationSession.state.collect { current ->
                 // 仅在任务自然结束（RUNNING → IDLE/ERROR）时关闭游戏；
                 // 手动停止走 RUNNING → STOPPING → IDLE，prev 为 STOPPING 不会匹配，
                 // 这是预期行为：手动停止说明用户可能还要继续操作，不应自动关闭游戏。
-                if (prev == MaaExecutionState.RUNNING
-                    && (current == MaaExecutionState.IDLE || current == MaaExecutionState.ERROR)
+                if (prev == ExecutionState.RUNNING
+                    && (current == ExecutionState.IDLE || current == ExecutionState.ERROR)
                     && appSettingsManager.closeAppOnTaskEnd.value
                 ) {
                     Timber.i("Task ended (%s), auto closing app", current)
@@ -462,7 +465,7 @@ class BackgroundTaskViewModel(
             _effects.send(UiEffect.toast(R.string.bg_toast_mute_failed))
         }
 
-        val result = compositionService.start(
+        val result = automationSession.startLegacyMaa(
             tasks = plan.params,
             clientType = plan.clientType,
             isScheduled = context.mode == TaskStartMode.SCHEDULED,
@@ -499,7 +502,7 @@ class BackgroundTaskViewModel(
     fun onStopTasks() {
         achievementReporter.reportTaskStopped()
         viewModelScope.launch {
-            compositionService.stop()
+            automationSession.stop()
         }
     }
 
@@ -585,7 +588,7 @@ class BackgroundTaskViewModel(
                 onTabChange(PanelTab.LOG)
                 onDialogDismiss()
                 viewModelScope.launch {
-                    compositionService.stop()
+                    automationSession.stop()
                 }
             }
 

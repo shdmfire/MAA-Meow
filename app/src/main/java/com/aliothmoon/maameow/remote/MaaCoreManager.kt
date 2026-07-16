@@ -1,7 +1,8 @@
 package com.aliothmoon.maameow.remote
 
+import com.aliothmoon.maameow.automation.remote.RemoteBootTrace
 import com.aliothmoon.maameow.maa.MaaCoreLibrary
-import com.aliothmoon.maameow.third.Ln
+import com.aliothmoon.maameow.automation.remote.third.Ln
 import com.sun.jna.Native
 
 object MaaCoreManager {

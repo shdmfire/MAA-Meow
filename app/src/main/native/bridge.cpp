@@ -45,8 +45,8 @@ static JNINativeMethod gMethods[] = {
         {"getFrameCount",         "()J",                         reinterpret_cast<void *>(nativeGetFrameCount)},
 };
 
-static constexpr char kNativeBridgeClass[] = "com/aliothmoon/maameow/bridge/NativeBridgeLib";
-static constexpr char kDriverClass[] = "com/aliothmoon/maameow/maa/DriverClass";
+static constexpr char kNativeBridgeClass[] = "com/aliothmoon/maameow/automation/remote/bridge/NativeBridgeLib";
+static constexpr char kDriverClass[] = "com/aliothmoon/maameow/automation/remote/RemoteNativeDriver";
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     (void) reserved;

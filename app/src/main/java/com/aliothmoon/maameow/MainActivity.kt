@@ -17,11 +17,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.aliothmoon.maameow.automation.api.ExecutionState
+import com.aliothmoon.maameow.automation.legacy.LegacyAutomationSessionFacade
 import com.aliothmoon.maameow.data.achievement.AchievementEvents
 import com.aliothmoon.maameow.data.achievement.AchievementRepository
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
-import com.aliothmoon.maameow.domain.service.MaaCompositionService
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
 import com.aliothmoon.maameow.overlay.screensaver.ScreenSaverOverlayManager
 import com.aliothmoon.maameow.presentation.navigation.AppNavigation
 import com.aliothmoon.maameow.presentation.viewmodel.BackgroundTaskViewModel
@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
 
     private val appSettingsManager: AppSettingsManager by inject()
     private val achievementRepository: AchievementRepository by inject()
-    private val compositionService: MaaCompositionService by inject()
+    private val automationSession: LegacyAutomationSessionFacade by inject()
     private val screenSaverManager: ScreenSaverOverlayManager by inject()
     private val backgroundTaskViewModel: BackgroundTaskViewModel by viewModel()
 
@@ -101,13 +101,14 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
-                    compositionService.state,
+                    automationSession.state,
                     screenSaverManager.showing,
                     appSettingsManager.useHardwareScreenOff,
                 ) { taskState, saverShowing, hwFeatureEnabled ->
-                    val taskActive = taskState == MaaExecutionState.STARTING
-                            || taskState == MaaExecutionState.RUNNING
-                            || taskState == MaaExecutionState.STOPPING
+                    val taskActive = taskState == ExecutionState.PREPARING
+                            || taskState == ExecutionState.STARTING
+                            || taskState == ExecutionState.RUNNING
+                            || taskState == ExecutionState.STOPPING
                     // 启用硬件熄屏功能后，前台时始终保持屏幕常亮、与任务状态解耦：
                     // 确保系统不会自动休眠/锁屏而中断正在运行的任务，硬件熄屏也无需再维护状态。
                     hwFeatureEnabled || taskActive || saverShowing

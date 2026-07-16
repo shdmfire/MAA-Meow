@@ -10,8 +10,8 @@ import com.aliothmoon.maameow.data.permission.PermissionState
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.RemoteBackend
 import com.aliothmoon.maameow.domain.models.RunMode
-import com.aliothmoon.maameow.remote.PermissionGrantRequest
-import com.aliothmoon.maameow.remote.PermissionGrantRequest.Companion.PERM_ACCESSIBILITY
+import com.aliothmoon.maameow.automation.ipc.PermissionGrantRequest
+import com.aliothmoon.maameow.automation.ipc.PermissionGrantRequest.Companion.PERM_ACCESSIBILITY
 import com.aliothmoon.maameow.service.AccessibilityHelperService
 import com.hjq.permissions.XXPermissions
 import com.hjq.permissions.permission.PermissionLists

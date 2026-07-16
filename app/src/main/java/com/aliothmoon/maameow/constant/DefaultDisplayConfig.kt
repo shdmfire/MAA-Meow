@@ -1,5 +1,7 @@
 package com.aliothmoon.maameow.constant
 
+import com.aliothmoon.maameow.automation.api.ResolutionSpec
+
 /**
  * 默认允许的一些宽高配置
  */
@@ -20,7 +22,14 @@ object DefaultDisplayConfig {
 
     const val FRAME_INTERVAL_MS = 16L
 
-    data class Resolution(val width: Int, val height: Int, val dpi: Int)
+    data class Resolution(val width: Int, val height: Int, val dpi: Int) {
+        fun toResolutionSpec(): ResolutionSpec = ResolutionSpec(width, height, dpi)
+
+        companion object {
+            fun fromResolutionSpec(spec: ResolutionSpec): Resolution =
+                Resolution(spec.width, spec.height, spec.dpi)
+        }
+    }
 
     val RES_720P = Resolution(1280, 720, 160)
     val RES_1080P = Resolution(1920, 1080, 240)
@@ -31,6 +40,7 @@ object DefaultDisplayConfig {
     /**
      * 根据用户偏好 + clientType 解析最终分辨率。
      * YoStarEN 静默强制 1080p；其他客户端使用用户偏好。
+     * TODO(Phase 4): move this MAA client-specific rule into the MAA controller module.
      */
     fun resolveResolution(
         clientType: String,

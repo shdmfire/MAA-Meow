@@ -73,7 +73,7 @@ bool InitInputBridge(JavaVM *vm, JNIEnv *env, const char *driverClassName) {
     g_key_up_method = env->GetStaticMethodID(g_driver_clz, "keyUp", "(II)Z");
     g_start_app_method = env->GetStaticMethodID(g_driver_clz, "startApp", "(Ljava/lang/String;IZ)Z");
 
-    if (CheckJNIException(env, "GetStaticMethodID(DriverClass)") ||
+    if (CheckJNIException(env, "GetStaticMethodID(RemoteNativeDriver)") ||
         !g_touch_down_method || !g_touch_move_method || !g_touch_up_method ||
         !g_key_down_method || !g_key_up_method || !g_start_app_method) {
         ReleaseInputBridge(env);

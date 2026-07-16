@@ -5,7 +5,7 @@ import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.AchievementReporter
 import com.aliothmoon.maameow.domain.service.AppAliveChecker
-import com.aliothmoon.maameow.remote.AppAliveStatus
+import com.aliothmoon.maameow.automation.remote.AppAliveStatus
 import timber.log.Timber
 
 /**

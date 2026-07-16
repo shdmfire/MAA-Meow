@@ -18,7 +18,7 @@ import com.aliothmoon.maameow.data.model.TaskProfile
 import com.aliothmoon.maameow.data.model.TaskTypeInfo
 import com.aliothmoon.maameow.data.model.WakeUpConfig
 import com.aliothmoon.maameow.manager.RemoteServiceManager
-import com.aliothmoon.maameow.remote.PermissionGrantRequest
+import com.aliothmoon.maameow.automation.ipc.PermissionGrantRequest
 import com.aliothmoon.maameow.utils.JsonUtils
 import com.aliothmoon.maameow.utils.i18n.LocaleBootstrap.resolveSelectedLanguage
 import kotlinx.coroutines.CoroutineScope

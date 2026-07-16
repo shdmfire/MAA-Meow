@@ -9,7 +9,7 @@ import com.aliothmoon.maameow.data.resource.ResourceDataManager
 import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.AchievementReporter
 import com.aliothmoon.maameow.domain.service.AppAliveChecker
-import com.aliothmoon.maameow.remote.AppAliveStatus
+import com.aliothmoon.maameow.automation.remote.AppAliveStatus
 import io.mockk.every
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals

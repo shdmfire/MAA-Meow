@@ -4,7 +4,8 @@ import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.automation.api.ExecutionState
+import com.aliothmoon.maameow.automation.legacy.LegacyAutomationSessionFacade
 import com.aliothmoon.maameow.schedule.data.ScheduleStrategyRepository
 import com.aliothmoon.maameow.schedule.model.CountdownState
 import com.aliothmoon.maameow.schedule.model.ExecutionResult
@@ -28,6 +29,7 @@ class ScheduledLaunchCoordinator(
     private val scope: CoroutineScope,
     private val scheduleRepository: ScheduleStrategyRepository,
     private val compositionService: MaaCompositionService,
+    private val automationSession: LegacyAutomationSessionFacade,
     private val appSettingsManager: AppSettingsManager,
     private val chainState: TaskChainState,
     private val triggerLogger: ScheduleTriggerLogger,
@@ -111,13 +113,13 @@ class ScheduledLaunchCoordinator(
             }
         }
 
-        if (compositionService.state.value == MaaExecutionState.RUNNING
-            || compositionService.state.value == MaaExecutionState.STARTING
-            || compositionService.state.value == MaaExecutionState.STOPPING
+        if (automationSession.state.value == ExecutionState.RUNNING
+            || automationSession.state.value == ExecutionState.STARTING
+            || automationSession.state.value == ExecutionState.STOPPING
         ) {
             if (request.forceStart) {
                 triggerLogger.append("强制启动: 停止当前运行任务")
-                compositionService.stop()
+                automationSession.stop()
                 compositionService.stopVirtualDisplay()
             } else {
                 reject(request, ExecutionResult.SKIPPED_BUSY, "有任务正在运行")

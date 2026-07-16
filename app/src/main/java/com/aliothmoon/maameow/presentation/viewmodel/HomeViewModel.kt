@@ -9,11 +9,11 @@ import com.aliothmoon.maameow.constant.DisplayMode
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.OverlayControlMode
 import com.aliothmoon.maameow.domain.models.RunMode
-import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.service.MaaResourceLoader
 import com.aliothmoon.maameow.domain.service.ResourceInitService
 import com.aliothmoon.maameow.domain.service.update.UpdateService
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.automation.api.ExecutionState
+import com.aliothmoon.maameow.automation.legacy.LegacyAutomationSessionFacade
 import com.aliothmoon.maameow.manager.PermissionManager
 import com.aliothmoon.maameow.manager.RemoteServiceManager
 import com.aliothmoon.maameow.manager.RemoteServiceManager.useRemoteService
@@ -45,7 +45,7 @@ class HomeViewModel(
     private val updateService: UpdateService,
     private val permissionManager: PermissionManager,
     private val resourceLoader: MaaResourceLoader,
-    private val compositionService: MaaCompositionService,
+    private val automationSession: LegacyAutomationSessionFacade,
     private val resourceInitService: ResourceInitService,
 ) : ViewModel() {
 
@@ -79,7 +79,7 @@ class HomeViewModel(
     private fun observeServiceStatus() {
         viewModelScope.launch {
             combine(
-                RemoteServiceManager.state, resourceLoader.state, compositionService.state
+                RemoteServiceManager.state, resourceLoader.state, automationSession.state
             ) { serviceState, resourceState, executionState ->
                 Timber.i("ServiceState collect $serviceState $resourceState $executionState")
                 val remoteServiceActive =
@@ -115,15 +115,15 @@ class HomeViewModel(
                         false
                     )
 
-                    executionState == MaaExecutionState.ERROR -> Triple(
+                    executionState == ExecutionState.ERROR -> Triple(
                         uiTextOf(R.string.home_status_task_error), StatusColorType.ERROR, false
                     )
 
-                    executionState == MaaExecutionState.STARTING -> Triple(
+                    executionState == ExecutionState.STARTING -> Triple(
                         uiTextOf(R.string.home_status_task_starting), StatusColorType.WARNING, true
                     )
 
-                    executionState == MaaExecutionState.RUNNING -> Triple(
+                    executionState == ExecutionState.RUNNING -> Triple(
                         uiTextOf(R.string.home_status_task_running), StatusColorType.PRIMARY, true
                     )
 
@@ -572,8 +572,8 @@ class HomeViewModel(
     }
 
     fun checkRunModeChangeEnabled(): Boolean {
-        val value = compositionService.state.value
-        return !(value == MaaExecutionState.RUNNING || value == MaaExecutionState.STARTING || value == MaaExecutionState.STOPPING)
+        val value = automationSession.state.value
+        return !(value == ExecutionState.RUNNING || value == ExecutionState.STARTING || value == ExecutionState.STOPPING)
     }
 
 

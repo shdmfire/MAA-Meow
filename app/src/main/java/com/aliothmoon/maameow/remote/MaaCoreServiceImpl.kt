@@ -7,7 +7,7 @@ import com.aliothmoon.maameow.MaaCoreCallback
 import com.aliothmoon.maameow.MaaCoreService
 import com.aliothmoon.maameow.maa.AsstApiCallback
 import com.aliothmoon.maameow.maa.MaaCoreLibrary
-import com.aliothmoon.maameow.third.Ln
+import com.aliothmoon.maameow.automation.remote.third.Ln
 import com.sun.jna.Memory
 import com.sun.jna.Pointer
 import java.io.FileDescriptor

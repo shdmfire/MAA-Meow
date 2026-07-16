@@ -4,7 +4,8 @@ import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.domain.models.OverlayControlMode
 import com.aliothmoon.maameow.data.preferences.TaskChainState
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.automation.api.ExecutionState
+import com.aliothmoon.maameow.automation.legacy.LegacyAutomationSessionFacade
 import com.aliothmoon.maameow.domain.usecase.PrepareTaskStartUseCase
 import com.aliothmoon.maameow.domain.usecase.TaskStartContext
 import com.aliothmoon.maameow.domain.usecase.TaskStartDecision
@@ -25,6 +26,7 @@ class ForegroundScheduleStarter(
     private val prepareTaskStartUseCase: PrepareTaskStartUseCase,
     private val chainState: TaskChainState,
     private val compositionService: MaaCompositionService,
+    private val automationSession: LegacyAutomationSessionFacade,
     private val triggerLogger: ScheduleTriggerLogger,
     private val scheduleRepository: ScheduleStrategyRepository,
     private val appSettingsManager: AppSettingsManager,
@@ -40,11 +42,11 @@ class ForegroundScheduleStarter(
         try {
             Timber.i("接管前台定时请求 ${request.requestId}")
 
-            if (compositionService.state.value == MaaExecutionState.RUNNING ||
-                compositionService.state.value == MaaExecutionState.STARTING) {
+            if (automationSession.state.value == ExecutionState.RUNNING ||
+                automationSession.state.value == ExecutionState.STARTING) {
                 if (request.forceStart) {
                     triggerLogger.append("强制启动: 停止当前运行任务")
-                    compositionService.stop()
+                    automationSession.stop()
                 } else {
                     val busyMsg = "有任务正在运行，跳过定时执行"
                     triggerLogger.append(busyMsg)
@@ -103,7 +105,7 @@ class ForegroundScheduleStarter(
                     is TaskStartDecision.Ready -> {
                         triggerLogger.append("前置条件通过，启用任务 ${chain.size} 项，正在启动 MAA 核心服务...")
 
-                        val result = compositionService.start(
+                        val result = automationSession.startLegacyMaa(
                             tasks = decision.plan.params,
                             clientType = decision.plan.clientType,
                             isScheduled = true

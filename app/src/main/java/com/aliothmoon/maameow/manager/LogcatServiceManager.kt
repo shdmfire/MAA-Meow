@@ -6,11 +6,11 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.os.Process
 import com.aliothmoon.maameow.BuildConfig
-import com.aliothmoon.maameow.ILogcatService
+import com.aliothmoon.maameow.automation.ipc.ILogcatService
 import com.aliothmoon.maameow.domain.models.RemoteBackend
-import com.aliothmoon.maameow.remote.LogcatCaptureServiceImpl
-import com.aliothmoon.maameow.root.RootServiceBootstrapRegistry
-import com.aliothmoon.maameow.root.RootServiceStarter
+import com.aliothmoon.maameow.automation.remote.LogcatCaptureServiceImpl
+import com.aliothmoon.maameow.automation.remote.root.RootServiceBootstrapRegistry
+import com.aliothmoon.maameow.automation.remote.root.RootServiceStarter
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

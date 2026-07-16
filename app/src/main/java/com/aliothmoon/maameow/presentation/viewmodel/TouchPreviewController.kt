@@ -2,7 +2,7 @@ package com.aliothmoon.maameow.presentation.viewmodel
 
 import android.os.SystemClock
 import android.view.MotionEvent
-import com.aliothmoon.maameow.ITouchEventCallback
+import com.aliothmoon.maameow.automation.ipc.ITouchEventCallback
 import com.aliothmoon.maameow.manager.RemoteServiceManager
 import com.aliothmoon.maameow.presentation.state.PreviewTouchMarker
 import kotlinx.coroutines.CoroutineScope

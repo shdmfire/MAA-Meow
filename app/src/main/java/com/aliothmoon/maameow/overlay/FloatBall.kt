@@ -34,14 +34,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.aliothmoon.maameow.R
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.automation.api.ExecutionState
 
 
 @Composable
 fun FloatBall(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    runningState: MaaExecutionState = MaaExecutionState.IDLE,
+    runningState: ExecutionState = ExecutionState.IDLE,
     countdownSeconds: Int? = null,
 ) {
     val safeCountdownSeconds = countdownSeconds?.takeIf { it > 0 }
@@ -50,9 +50,9 @@ fun FloatBall(
 
     val targetColor = when {
         isCountdown -> Color(0xFFFFA726)
-        runningState == MaaExecutionState.RUNNING -> Color(0xFF4CAF50) // 绿色 - 运行中
-        runningState == MaaExecutionState.STOPPING -> Color(0xFFFFA726) // 橙色 - 停止中
-        runningState == MaaExecutionState.ERROR -> Color(0xFFE53935) // 红色 - 错误
+        runningState == ExecutionState.RUNNING -> Color(0xFF4CAF50) // 绿色 - 运行中
+        runningState == ExecutionState.STOPPING -> Color(0xFFFFA726) // 橙色 - 停止中
+        runningState == ExecutionState.ERROR -> Color(0xFFE53935) // 红色 - 错误
         else -> MaterialTheme.colorScheme.primary // IDLE, STARTING 等使用默认主题色
     }
 
@@ -73,7 +73,7 @@ fun FloatBall(
         ),
     )
 
-    val alphaModifier = if (runningState == MaaExecutionState.RUNNING || isCountdown) {
+    val alphaModifier = if (runningState == ExecutionState.RUNNING || isCountdown) {
         Modifier.alpha(breathingAlpha)
     } else {
         Modifier
@@ -81,11 +81,12 @@ fun FloatBall(
 
     val stateDescription = stringResource(
         when (runningState) {
-            MaaExecutionState.IDLE -> R.string.overlay_floatball_state_idle
-            MaaExecutionState.STARTING -> R.string.overlay_floatball_state_starting
-            MaaExecutionState.RUNNING -> R.string.overlay_floatball_state_running
-            MaaExecutionState.STOPPING -> R.string.overlay_floatball_state_stopping
-            MaaExecutionState.ERROR -> R.string.overlay_floatball_state_error
+            ExecutionState.IDLE -> R.string.overlay_floatball_state_idle
+            ExecutionState.PREPARING,
+            ExecutionState.STARTING -> R.string.overlay_floatball_state_starting
+            ExecutionState.RUNNING -> R.string.overlay_floatball_state_running
+            ExecutionState.STOPPING -> R.string.overlay_floatball_state_stopping
+            ExecutionState.ERROR -> R.string.overlay_floatball_state_error
         }
     )
     val semanticsDescription = if (isCountdown) {
@@ -125,8 +126,8 @@ fun FloatBall(
             } else {
                 Icon(
                     imageVector = when (runningState) {
-                        MaaExecutionState.RUNNING -> Icons.Filled.PlayArrow
-                        MaaExecutionState.ERROR -> Icons.Filled.Warning
+                        ExecutionState.RUNNING -> Icons.Filled.PlayArrow
+                        ExecutionState.ERROR -> Icons.Filled.Warning
                         else -> Icons.Filled.Check
                     },
                     contentDescription = stateDescription,

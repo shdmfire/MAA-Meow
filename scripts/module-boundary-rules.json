@@ -13,9 +13,73 @@
       "enabledFromPhase": 0,
       "description": "the control shell must not depend on controller implementations",
       "suggestion": "resolve controllers through the plugin/registry contract instead of a project dependency"
+    },
+    {
+      "from": ":automation:api",
+      "forbid": ":app",
+      "enabledFromPhase": 1,
+      "description": "automation API must remain independent from the Android app",
+      "suggestion": "keep contracts in :automation:api and place Android adapters in :app"
+    },
+    {
+      "from": ":automation:api",
+      "forbid": ":hidden-api",
+      "enabledFromPhase": 1,
+      "description": "automation API must not depend on Android hidden APIs",
+      "suggestion": "place device and Android implementation details in a runtime module"
+    },
+    {
+      "from": ":automation:runtime-remote",
+      "forbid": ":app",
+      "enabledFromPhase": 2,
+      "description": "remote runtime must not depend on the application or MAA implementation",
+      "suggestion": "put compatibility composition in the app legacy binder"
+    },
+    {
+      "from": ":automation:android-ipc",
+      "forbid": ":app",
+      "enabledFromPhase": 2,
+      "description": "generic IPC contracts must not depend on app AIDL or MAA types",
+      "suggestion": "keep IPC parcelables and interfaces controller-neutral"
     }
   ],
   "importRules": [
+    {
+      "sourceRoot": "automation/runtime-remote/src/main",
+      "forbiddenPrefixes": [
+        "com.aliothmoon.maameow.maa",
+        "com.aliothmoon.maameow.remote.MaaCoreManager",
+        "com.sun.jna"
+      ],
+      "enabledFromPhase": 2,
+      "description": "remote runtime must not import MAA or JNA implementation types",
+      "suggestion": "compose MAA compatibility only in app/src/main/.../remote/legacy"
+    },
+    {
+      "sourceRoot": "automation/android-ipc/src/main",
+      "forbiddenPrefixes": [
+        "com.aliothmoon.maameow.MaaCoreService",
+        "com.aliothmoon.maameow.MaaCoreCallback",
+        "com.aliothmoon.maameow.RemoteService"
+      ],
+      "enabledFromPhase": 2,
+      "description": "generic automation IPC must not import legacy MAA or app service contracts",
+      "suggestion": "use IRemoteAutomationService and controller-neutral parcelables"
+    },
+    {
+      "sourceRoot": "automation/api/src/main",
+      "forbiddenPrefixes": [
+        "android",
+        "androidx",
+        "com.aliothmoon.maameow.maa",
+        "com.sun.jna",
+        "com.topjohnwu.superuser",
+        "rikka.shizuku"
+      ],
+      "enabledFromPhase": 1,
+      "description": "automation API must be pure Kotlin without Android, Compose, MAA, JNA, Root, or Shizuku imports",
+      "suggestion": "move platform/controller implementation code to an adapter or runtime module"
+    },
     {
       "sourceRoot": "app/src/main",
       "forbiddenPrefixes": [
@@ -27,6 +91,7 @@
       "description": "app/src/main must not gain new MAA/controller implementation imports (Phase 0 ratchet)",
       "suggestion": "move the dependency behind a controller-neutral API; Phase 6 removes this baseline",
       "baselineFiles": [
+        "app/src/main/java/com/aliothmoon/maameow/automation/legacy/LegacyAutomationSessionFacade.kt",
         "app/src/main/java/com/aliothmoon/maameow/data/model/AwardConfig.kt",
         "app/src/main/java/com/aliothmoon/maameow/data/model/FightConfig.kt",
         "app/src/main/java/com/aliothmoon/maameow/data/model/InfrastConfig.kt",

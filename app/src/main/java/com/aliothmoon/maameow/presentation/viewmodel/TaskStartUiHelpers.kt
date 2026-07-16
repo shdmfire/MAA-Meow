@@ -3,7 +3,7 @@ package com.aliothmoon.maameow.presentation.viewmodel
 import android.content.Context
 import com.aliothmoon.maameow.R
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.automation.api.ExecutionState
 import com.aliothmoon.maameow.domain.usecase.TaskStartAcknowledgement
 import com.aliothmoon.maameow.domain.usecase.TaskStartDecision
 import com.aliothmoon.maameow.domain.usecase.TaskStartDecisionReason
@@ -152,12 +152,12 @@ internal fun Context.createStartWarningDialog(message: UiText): PanelDialogUiSta
     )
 }
 
-internal fun Context.createExecutionEndDialog(endState: MaaExecutionState): PanelDialogUiState {
+internal fun Context.createExecutionEndDialog(endState: ExecutionState): PanelDialogUiState {
     val message = when (endState) {
-        MaaExecutionState.ERROR -> uiTextOf(R.string.task_start_execution_aborted_message)
+        ExecutionState.ERROR -> uiTextOf(R.string.task_start_execution_aborted_message)
         else -> uiTextOf(R.string.task_start_execution_finished_message)
     }
-    return if (endState == MaaExecutionState.ERROR) {
+    return if (endState == ExecutionState.ERROR) {
         PanelDialogUiState(
             type = PanelDialogType.ERROR,
             title = uiTextOf(R.string.task_start_dialog_info_title),

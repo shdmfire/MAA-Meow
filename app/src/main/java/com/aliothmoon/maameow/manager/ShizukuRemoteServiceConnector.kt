@@ -5,7 +5,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import com.aliothmoon.maameow.BuildConfig
 import com.aliothmoon.maameow.domain.models.RemoteBackend
-import com.aliothmoon.maameow.remote.RemoteServiceImpl
+import com.aliothmoon.maameow.remote.legacy.LegacyRemoteServiceImpl
 import rikka.shizuku.Shizuku
 import timber.log.Timber
 import java.util.UUID
@@ -81,7 +81,7 @@ object ShizukuRemoteServiceConnector : RemoteServiceConnectorBackend {
 
     private fun createServiceArgs(): Shizuku.UserServiceArgs {
         return Shizuku.UserServiceArgs(
-            ComponentName(BuildConfig.APPLICATION_ID, RemoteServiceImpl::class.java.name)
+            ComponentName(BuildConfig.APPLICATION_ID, LegacyRemoteServiceImpl::class.java.name)
         ).apply {
             processNameSuffix("service")
             daemon(false)

@@ -25,13 +25,16 @@ val checkModuleBoundaries by tasks.registering(Exec::class) {
     group = "verification"
     description = "Check staged module dependencies and source imports"
     dependsOn(checkServiceLoaderEntries)
-    commandLine(pythonCmd, "scripts/check_module_boundaries.py", "--phase", "0")
+    commandLine(pythonCmd, "scripts/check_module_boundaries.py", "--phase", "2")
 }
 
 tasks.register("modularizationFastCheck") {
     group = "verification"
-    description = "Run Phase 0 modularization boundaries and JVM regression tests"
+    description = "Run staged modularization boundaries and JVM regression tests"
     dependsOn(checkModuleBoundaries)
+    dependsOn(":automation:api:test")
+    dependsOn(":automation:android-ipc:testDebugUnitTest")
+    dependsOn(":automation:runtime-remote:testDebugUnitTest")
     dependsOn(":app:testDebugUnitTest")
     dependsOn(":app:verifyI18nStrings")
 }

@@ -1,7 +1,7 @@
 package com.aliothmoon.maameow.domain.service
 
 import com.aliothmoon.maameow.manager.RemoteServiceManager
-import com.aliothmoon.maameow.remote.AppAliveStatus
+import com.aliothmoon.maameow.automation.remote.AppAliveStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber

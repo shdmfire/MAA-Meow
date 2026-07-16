@@ -124,6 +124,8 @@ android {
         compose = true
     }
 
+
+
     externalNativeBuild {
         cmake {
             path = file("src/main/native/CMakeLists.txt")
@@ -165,6 +167,9 @@ kotlin {
 dependencies {
     compileOnly(project(":hidden-api"))
     implementation(project(":annotation-api"))
+    implementation(project(":automation:api"))
+    implementation(project(":automation:android-ipc"))
+    implementation(project(":automation:runtime-remote"))
     ksp(project(":ksp-processor"))
 
     implementation(libs.androidx.core.ktx)
@@ -303,3 +308,14 @@ androidComponents {
         variant.sources.kotlin?.addGeneratedSourceDirectory(genTask) { it.outputDir }
     }
 }
+
+tasks.register("printAidlType") {
+    doLast {
+        tasks.withType<com.android.build.gradle.tasks.AidlCompile>().forEach {
+            println("importDirs class: " + it.importDirs::class.java)
+            println("importDirs interfaces: " + it.importDirs::class.java.interfaces.toList())
+        }
+    }
+}
+
+

@@ -2,10 +2,10 @@ package com.aliothmoon.maameow;
 
 import android.content.Intent;
 import android.view.Surface;
-import com.aliothmoon.maameow.ITouchEventCallback;
+import com.aliothmoon.maameow.automation.ipc.ITouchEventCallback;
 import com.aliothmoon.maameow.MaaCoreService;
-import com.aliothmoon.maameow.remote.PermissionGrantRequest;
-import com.aliothmoon.maameow.remote.PermissionStateInfo;
+import com.aliothmoon.maameow.automation.ipc.PermissionGrantRequest;
+import com.aliothmoon.maameow.automation.ipc.PermissionStateInfo;
 
 interface RemoteService {
 

@@ -98,7 +98,8 @@ import com.aliothmoon.maameow.domain.models.RunMode
 import com.aliothmoon.maameow.domain.service.AppWatchdog
 import com.aliothmoon.maameow.domain.service.MaaCompositionService
 import com.aliothmoon.maameow.domain.service.UnifiedStateDispatcher
-import com.aliothmoon.maameow.domain.state.MaaExecutionState
+import com.aliothmoon.maameow.automation.api.ExecutionState
+import com.aliothmoon.maameow.automation.legacy.LegacyAutomationSessionFacade
 import com.aliothmoon.maameow.manager.PermissionManager
 import com.aliothmoon.maameow.overlay.screensaver.ScreenSaverOverlayManager
 import com.aliothmoon.maameow.presentation.components.AdaptiveTaskPromptDialog
@@ -130,6 +131,7 @@ fun BackgroundTaskView(
     copilotViewModel: CopilotViewModel = koinInject(),
     toolboxViewModel: ToolboxViewModel = koinInject(),
     compositionService: MaaCompositionService = koinInject(),
+    automationSession: LegacyAutomationSessionFacade = koinInject(),
     dispatcher: UnifiedStateDispatcher = koinInject(),
     screenSaverManager: ScreenSaverOverlayManager = koinInject(),
     appWatchdog: AppWatchdog = koinInject(),
@@ -139,7 +141,7 @@ fun BackgroundTaskView(
 
     val coroutineScope = rememberCoroutineScope()
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val maaState by compositionService.state.collectAsStateWithLifecycle()
+    val maaState by automationSession.state.collectAsStateWithLifecycle()
     val runMode by appSettingsManager.runMode.collectAsStateWithLifecycle()
     val permissionState by permissionManager.state.collectAsStateWithLifecycle()
     val markers by viewModel.markers.collectAsStateWithLifecycle()
@@ -305,7 +307,7 @@ fun BackgroundTaskView(
                 if (!state.isFullscreenMonitor) {
                     VirtualDisplayPreview(
                         modifier = Modifier.fillMaxSize(),
-                        isRunning = maaState == MaaExecutionState.RUNNING,
+                        isRunning = maaState == ExecutionState.RUNNING,
                         isSurfaceAvailable = isSurfaceAvailable,
                         onClick = { viewModel.onToggleFullscreenMonitor() }) {
                         previewContent()
@@ -487,7 +489,7 @@ fun BackgroundTaskView(
                                             else -> {}
                                         }
                                     },
-                                    enabled = maaState != MaaExecutionState.RUNNING && maaState != MaaExecutionState.STARTING && maaState != MaaExecutionState.STOPPING,
+                                    enabled = maaState != ExecutionState.RUNNING && maaState != ExecutionState.STARTING && maaState != ExecutionState.STOPPING,
                                     colors = if (startBlocked) {
                                         ButtonDefaults.buttonColors(
                                             containerColor = MaterialTheme.colorScheme.onSurface.copy(
@@ -503,7 +505,7 @@ fun BackgroundTaskView(
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    if (maaState == MaaExecutionState.STARTING) {
+                                    if (maaState == ExecutionState.STARTING) {
                                         CircularProgressIndicator(
                                             modifier = Modifier.size(20.dp),
                                             color = MaterialTheme.colorScheme.onPrimary,
@@ -523,14 +525,14 @@ fun BackgroundTaskView(
                                             else -> {}
                                         }
                                     },
-                                    enabled = maaState == MaaExecutionState.RUNNING,
+                                    enabled = maaState == ExecutionState.RUNNING,
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(
                                         contentColor = MaterialTheme.colorScheme.error
                                     )
                                 ) {
-                                    if (maaState == MaaExecutionState.STOPPING) {
+                                    if (maaState == ExecutionState.STOPPING) {
                                         CircularProgressIndicator(
                                             modifier = Modifier.size(20.dp),
                                             color = MaterialTheme.colorScheme.error,
@@ -583,7 +585,7 @@ fun BackgroundTaskView(
                 onShowScreenSaver = { screenSaverManager.show(context as? Activity) },
                 onCaptureScreenshot = viewModel::onCaptureDebugScreenshot,
                 onCloseApp = {
-                    if (maaState == MaaExecutionState.RUNNING) {
+                    if (maaState == ExecutionState.RUNNING) {
                         showCloseConfirm = true
                     } else {
                         coroutineScope.launch { compositionService.stopVirtualDisplay() }

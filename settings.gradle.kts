@@ -27,6 +27,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "MaaMeow"
 include(":app")
+include(":automation:api")
+include(":automation:android-ipc")
+include(":automation:runtime-remote")
 include(":hidden-api")
 include(":annotation-api")
 include(":ksp-processor")
