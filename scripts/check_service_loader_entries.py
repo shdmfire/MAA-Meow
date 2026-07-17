@@ -10,8 +10,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDER = re.compile(r"^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$")
-CONTROLLER_ID = re.compile(r"\bcontrollerId\s*(?::\s*String\s*)?=\s*[\"']([^\"']+)[\"']")
+CONTROLLER_ID_DECLARATION = re.compile(
+    r"(?:\bconst\s+val|\b(?:public\s+|private\s+|protected\s+)?static\s+final\s+String)"
+    r"\s+CONTROLLER_ID\s*(?::\s*String\s*)?=\s*[\"']([^\"']+)[\"']"
+)
 SKIP_DIRS = {".git", ".gradle", ".idea", "build", "node_modules"}
+TEST_SOURCE_DIRS = {"test", "androidTest"}
 
 
 def project_files():
@@ -42,10 +46,11 @@ def main() -> int:
 
     ids: dict[str, list[str]] = defaultdict(list)
     for source in all_files:
-        if source.suffix not in {".kt", ".java"}:
+        relative = source.relative_to(ROOT)
+        if source.suffix not in {".kt", ".java"} or TEST_SOURCE_DIRS.intersection(relative.parts):
             continue
-        for controller_id in CONTROLLER_ID.findall(source.read_text(encoding="utf-8")):
-            ids[controller_id].append(str(source.relative_to(ROOT)))
+        for controller_id in CONTROLLER_ID_DECLARATION.findall(source.read_text(encoding="utf-8")):
+            ids[controller_id].append(str(relative))
     for controller_id, locations in ids.items():
         if len(locations) > 1:
             errors.append(f"duplicate controllerId {controller_id!r}: {', '.join(locations)}")

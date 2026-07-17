@@ -1,5 +1,6 @@
 package com.aliothmoon.maameow
 
+import com.aliothmoon.maameow.controller.maa.engine.MaaCoreService
 import com.aliothmoon.maameow.data.config.MaaPathConfig
 import com.aliothmoon.maameow.data.preferences.AppSettingsManager
 import com.aliothmoon.maameow.data.preferences.TaskChainState
